@@ -40,7 +40,7 @@ export class World {
     onClick(event: MouseEvent) {
         const fish = new Fish(this.aquarium);
         const rand = (delta: number) => Math.random() * delta - delta * 0.5;
-        fish.movement = new Vector3(rand(0.2), rand(0.2), rand(0.2));
+        fish.movement = new Vector3(rand(0.5), rand(0.5), rand(0.5));
         fish.position.set(rand(1.75), rand(0.75), rand(0.75));
         this.aquarium.addFish(fish);
         this.scene.add(fish.mesh);

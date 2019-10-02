@@ -20,12 +20,11 @@ export class Fish extends Element3D {
         const position = this.position.clone();
         super.update(delta);
 
-        const outGlass = this.aquarium.outGlass(this);
-        // console.log(Object.entries(Glass).find((key, value) => value === outGlass));
-        if(outGlass !== Glass.NONE && this.movement){
+        const exceedsGlass = this.aquarium.exceedsGlass(this);
+        if(exceedsGlass !== Glass.NONE && this.movement){
             debugger;
             this.position.copy(position);
-            switch (outGlass) {
+            switch (exceedsGlass) {
                 case Glass.LEFT:
                 case Glass.RIGHT:
                     this.movement.setX(this.movement.x * -1);

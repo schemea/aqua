@@ -23,20 +23,16 @@ export class Aquarium extends Element3D {
             opacity: 0
         });
 
-        // glassMaterial.emissive = new Color(0xffffff);
-        // glassMaterial.emissiveIntensity = 0.1;
-
         for (const face of geometry.faces)
             face.materialIndex = 0;
         geometry.faces[4].materialIndex = 1;
         geometry.faces[5].materialIndex = 1;
-        // console.log(geometry.faces[1]);
 
         this.mesh = new Mesh(geometry, [glassMaterial, transparentMaterial]);
 
     }
 
-    outGlass(element: Element3D) {
+    exceedsGlass(element: Element3D) {
         const bounds = this.bounds;
         const elBounds = element.bounds;
 
