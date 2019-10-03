@@ -1,7 +1,7 @@
 import {BoxGeometry, Color, DoubleSide, Mesh, MeshBasicMaterial, MeshPhysicalMaterial, Vector3} from "three";
 import {Fish} from "./fish";
 import {Element3D} from "./element";
-import {Glass} from "./glass";
+import {Direction} from "./direction";
 
 export class Aquarium extends Element3D {
     fishes: Fish[] = [];
@@ -12,9 +12,9 @@ export class Aquarium extends Element3D {
         this.volume = new Vector3(2, 1, 1);
         const geometry = new BoxGeometry(this.volume.x, this.volume.y, this.volume.z);
         const glassMaterial = new MeshPhysicalMaterial({
-            color: new Color(0xffffff),
+            color: new Color(0x000000),
             transparent: true,
-            opacity: 0.2,
+            opacity: 0.15,
             side: DoubleSide
         });
 
@@ -37,23 +37,25 @@ export class Aquarium extends Element3D {
         const elBounds = element.bounds;
 
         if (elBounds.left < bounds.left)
-            return Glass.LEFT;
+            return Direction.LEFT;
         else if (elBounds.right > bounds.right)
-            return Glass.RIGHT;
+            return Direction.RIGHT;
         else if (elBounds.bottom < bounds.bottom)
-            return Glass.BOTTOM;
+            return Direction.BOTTOM;
         else if (elBounds.top > bounds.top)
-            return Glass.TOP;
+            return Direction.TOP;
         else if (elBounds.back < bounds.back)
-            return Glass.BACK;
+            return Direction.BACK;
         else if (elBounds.front > bounds.front)
-            return Glass.FRONT;
+            return Direction.FRONT;
         else
-            return Glass.NONE;
+            return Direction.NONE;
     }
 
     update(delta: DOMHighResTimeStamp) {
-        this.fishes.forEach(fish => fish.update(delta));
+        this.fishes.forEach(fish => {
+            fish.update(delta);
+        });
     }
 
     addFish(...fishes: Fish[]) {

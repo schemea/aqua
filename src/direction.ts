@@ -1,4 +1,4 @@
-export enum Glass {
+export enum Direction {
     NONE,
     TOP,
     BOTTOM,

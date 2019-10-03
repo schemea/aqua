@@ -1,4 +1,4 @@
-import {Vector3} from "three";
+import {Camera, PerspectiveCamera, Quaternion, Vector2, Vector3} from "three";
 import {MaterialHandler} from "three/examples/jsm/loaders/obj2/shared/MaterialHandler";
 
 export namespace Vector {
@@ -32,17 +32,51 @@ export namespace Vector {
         return new Vector3(x, y, z);
     }
 
-    export function toSpherical(vector: Vector3): {r: number, phi: number, theta: number} {
+    export function toSpherical(vector: Vector3): { r: number, phi: number, theta: number } {
         const r = Math.sqrt(vector.x ** 2 + vector.y ** 2 + vector.z ** 2);
         return {
             r,
-            phi: Math.atan(vector.y/vector.x),
-            theta : Math.acos(vector.z / r)
+            phi: Math.atan(vector.y / vector.x),
+            theta: Math.acos(vector.z / r)
         }
     }
 
     export function random() {
         return Vector.fromSpherical(1, Math.random() * 2 * Math.PI, Math.random() * 2 * Math.PI);
+    }
+
+    export function getLookAt(obj: { quaternion: Quaternion }) {
+        const lookAt = new Vector3(0, 0, -1);
+        lookAt.applyQuaternion(obj.quaternion);
+        return lookAt;
+    }
+
+    export function rotateY(vector: Vector3, angle: number) {
+        const norm = Math.sqrt(vector.z ** 2 + vector.y ** 2);
+        const org = Math.atan(vector.x / vector.z);
+        angle += org;
+        vector.setX(norm * Math.sin(angle));
+        vector.setY(norm * Math.cos(angle));
+        return vector;
+    }
+
+    export function projectMouse(position: { x: number, y: number }, camera: PerspectiveCamera, z: number) {
+        const fov = camera.fov * Math.PI / 180;
+
+        const d = 1 / Math.tan(fov / 2);
+        const x = position.x / innerWidth - 0.5;
+        const y = -(position.y / innerHeight - 0.5);
+        const xalpha = Math.atan(x / d);
+        const yalpha = Math.atan(y / d);
+
+        console.log(fov / 2, yalpha);
+        const lookAt = getLookAt(camera);
+        // lookAt.phi += xalpha;
+        // lookAt.theta += yalpha;
+        rotateY(lookAt, -0.5);
+        // rotateX(lookAt, yalpha);
+        const sphericalLookAt = Vector.toSpherical(lookAt);
+        return Vector.fromSpherical(z / Math.cos(sphericalLookAt.phi), sphericalLookAt.theta, sphericalLookAt.phi);
     }
 }
 

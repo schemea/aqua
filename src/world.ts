@@ -1,4 +1,4 @@
-import {WebGLRenderer, Scene, PerspectiveCamera, Color, Vector3, Light, AmbientLight} from "three";
+import {WebGLRenderer, Scene, PerspectiveCamera, Color, Vector3, AmbientLight, SpotLight} from "three";
 import {Aquarium} from "./aquarium";
 import {Fish} from "./fish";
 import {Vector} from "./math";
@@ -7,11 +7,11 @@ export class World {
     renderer: WebGLRenderer;
     scene: Scene = new Scene();
     camera = new PerspectiveCamera();
-    light = new Light(0xffffff);
+    light = new SpotLight(0xffffff);
     ambient = new AmbientLight(0xffffff);
 
     private timestamp: DOMHighResTimeStamp = 0;
-    private aquarium = new Aquarium();
+    public aquarium = new Aquarium();
 
     get canvas() {
         return this.renderer.domElement;
@@ -39,20 +39,32 @@ export class World {
     }
 
     onClick(event: MouseEvent) {
-        const fish = new Fish(this.aquarium);
+        Object.assign(window, {
+            Vector,
+            Vector3,
+            camera: this.camera,
+            aquarium: this.aquarium
+        });
+        const projection = Vector.projectMouse(event, this.camera, 0);
+        console.log(projection);
+        const fish = new Fish(this);
         const rand = (delta: number) => Math.random() * 2 * delta - delta;
         fish.movement = Vector.random().multiplyScalar(fish.speed + rand(0.05));
-        fish.position.set(rand(0.5), rand(0.25), rand(0.25));
+        fish.position.copy(projection);
         this.aquarium.addFish(fish);
         this.scene.add(fish.mesh);
     }
 
     initializeLights() {
-        this.light.position.set(0, 0.5, -3);
+        this.light.position.set(0, this.aquarium.volume.y * 1.2, 0);
         this.light.lookAt(0, 0, 0);
-        this.light.intensity = 10;
+        this.light.intensity = 1.5;
+        this.light.castShadow = true;
 
-        this.ambient.intensity = 1;
+        this.ambient.intensity = 0.5;
+
+        this.scene.add(this.light);
+        this.scene.add(this.ambient);
     }
 
     initializeEvents() {
@@ -67,7 +79,6 @@ export class World {
         this.initializeLights();
         this.initializeEvents();
 
-        this.scene.add(this.light);
         this.scene.add(this.aquarium.mesh);
 
         this.timestamp = performance.now();

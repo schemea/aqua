@@ -1,5 +1,7 @@
 import {Mesh, Vector3} from "three";
 import {Bounds} from "./bounds";
+import {NodeUtils} from "three/examples/jsm/nodes/core/NodeUtils";
+import {Direction} from "./direction";
 
 export class Element3D {
     volume!: Vector3;
@@ -37,6 +39,29 @@ export class Element3D {
             this.y += this.movement.y * factor;
             this.z += this.movement.z * factor;
         }
+    }
+
+    intersect(other: Element3D, minDistance?: number): Axe {
+        const bounds = this.bounds;
+        const oBounds = other.bounds;
+
+        if(minDistance) {
+            oBounds.x -= minDistance;
+            oBounds.y -= minDistance;
+            oBounds.z -= minDistance;
+            oBounds.width += minDistance * 2;
+            oBounds.height += minDistance * 2;
+            oBounds.depth += minDistance * 2;
+        }
+
+        if (bounds.left < oBounds.right && bounds.right > oBounds.left)
+            return Axe.X;
+        else if (bounds.bottom < oBounds.top && bounds.top > oBounds.bottom)
+            return Axe.Y;
+        else if (bounds.back < oBounds.front && bounds.front > oBounds.back)
+            return Axe.Z;
+        else
+            return Axe.NONE;
     }
 
     movement?: Vector3;
