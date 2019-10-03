@@ -43,6 +43,7 @@ const config: Configuration = {
     },
     mode: "development",
     target: "web",
+    devtool: "source-map",
     plugins: [
         new CleanWebpackPlugin(),
         new HtmlWebpackPlugin({

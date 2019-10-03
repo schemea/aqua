@@ -5,10 +5,11 @@ import {Glass} from "./glass";
 
 export class Fish extends Element3D {
     following?: Fish;
+    speed = 0.3;
 
-    constructor(public aquarium: Aquarium){
+    constructor(public aquarium: Aquarium) {
         super();
-        this.volume = new Vector3(0.15,0.1,0.1);
+        this.volume = new Vector3(0.15, 0.1, 0.1);
         const geometry = new BoxBufferGeometry(this.volume.x, this.volume.y, this.volume.z);
         const material = new MeshPhysicalMaterial({
             color: 0x0000ff
@@ -18,11 +19,16 @@ export class Fish extends Element3D {
 
     update(delta: number) {
         const position = this.position.clone();
+
+        // if (this.following) {
+        //     const angle = position.angleTo(this.following.position);
+        //     position.
+        // }
         super.update(delta);
 
+
         const exceedsGlass = this.aquarium.exceedsGlass(this);
-        if(exceedsGlass !== Glass.NONE && this.movement){
-            debugger;
+        if (exceedsGlass !== Glass.NONE && this.movement) {
             this.position.copy(position);
             switch (exceedsGlass) {
                 case Glass.LEFT:

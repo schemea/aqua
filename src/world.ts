@@ -1,6 +1,7 @@
 import {WebGLRenderer, Scene, PerspectiveCamera, Color, Vector3, Light, AmbientLight} from "three";
 import {Aquarium} from "./aquarium";
 import {Fish} from "./fish";
+import {Vector} from "./math";
 
 export class World {
     renderer: WebGLRenderer;
@@ -39,16 +40,15 @@ export class World {
 
     onClick(event: MouseEvent) {
         const fish = new Fish(this.aquarium);
-        const rand = (delta: number) => Math.random() * delta - delta * 0.5;
-        fish.movement = new Vector3(rand(0.5), rand(0.5), rand(0.5));
-        fish.position.set(rand(1.75), rand(0.75), rand(0.75));
+        const rand = (delta: number) => Math.random() * 2 * delta - delta;
+        fish.movement = Vector.random().multiplyScalar(fish.speed + rand(0.05));
+        fish.position.set(rand(0.5), rand(0.25), rand(0.25));
         this.aquarium.addFish(fish);
         this.scene.add(fish.mesh);
     }
 
     initializeLights() {
-        this.light.translateZ(-3);
-        this.light.translateY(0.5);
+        this.light.position.set(0, 0.5, -3);
         this.light.lookAt(0, 0, 0);
         this.light.intensity = 10;
 
