@@ -11,16 +11,16 @@ export namespace Vector {
     }
 
     export function distanceTo(origin: Vector3, target: Vector3) {
-        return magnitude(relativeTo(origin, target));
+        return norm(relativeTo(origin, target));
     }
 
-    export function magnitude(vector: Vector3) {
+    export function norm(vector: Vector3) {
         const xy = Math.sqrt(vector.x ** 2 + vector.y ** 2);
         return Math.sqrt(xy ** 2 + vector.z ** 2);
     }
 
     export function normalize(vector: Vector3): Vector3 {
-        const magnitude = Vector.magnitude(vector);
+        const magnitude = Vector.norm(vector);
         return new Vector3(vector.x / magnitude, vector.y / magnitude, vector.z / magnitude);
     }
 

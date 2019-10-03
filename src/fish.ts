@@ -2,6 +2,7 @@ import {Element3D} from "./element";
 import {BoxBufferGeometry, Mesh, MeshPhysicalMaterial, Vector3} from "three";
 import {Aquarium} from "./aquarium";
 import {Glass} from "./glass";
+import {Vector} from "./math";
 
 export class Fish extends Element3D {
     following?: Fish;
@@ -19,13 +20,34 @@ export class Fish extends Element3D {
 
     update(delta: number) {
         const position = this.position.clone();
+            const maxEdge = Math.max(this.volume.x, this.volume.y, this.volume.z);
+        if (this.following) {
+            if (Vector.distanceTo(position, this.following.position) > maxEdge * 1.1) {
+                this.movement = Vector.normalize(Vector.relativeTo(position, this.following.position));
+                this.movement.multiplyScalar(this.speed);
+            }
+        } else {
 
-        // if (this.following) {
-        //     const angle = position.angleTo(this.following.position);
-        //     position.
-        // }
+            this.aquarium.fishes.forEach(fish => {
+                if (fish === this)
+                    return;
+
+                const d = Vector.distanceTo(position, fish.position);
+                let following = fish.following;
+
+                if (d < maxEdge * 2.5) {
+                    while (following) {
+                        if (following === this)
+                            return;
+                        else
+                            following = following.following;
+                    }
+                    this.following = fish;
+                }
+            })
+        }
+
         super.update(delta);
-
 
         const exceedsGlass = this.aquarium.exceedsGlass(this);
         if (exceedsGlass !== Glass.NONE && this.movement) {
