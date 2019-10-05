@@ -87,6 +87,16 @@ test('matrix: multiply 3x2 by 2x3', () => {
     ]));
 });
 
+test('matrix: transpose', () => {
+    let mat = Matrix.fromArray([[1, 2, 3]]);
+    mat = Matrix.transpose(mat);
+    expect(mat).toEqual(Matrix.fromArray([
+        [1],
+        [2],
+        [3]
+    ]));
+});
+
 test('matrix3: transform', () => {
     const vec = new Vector3(1, 1, 1);
     const matrix = new Matrix3();
@@ -133,14 +143,4 @@ test('matrix3: rotateZ', () => {
 
     const r = matrix.transform(vec);
     expect(roundVec(r)).toEqual(new Vector3(0, 1, 0));
-});
-
-test('matrix: transpose', () => {
-    let mat = Matrix.fromArray([[1, 2, 3]]);
-    mat = Matrix.transpose(mat);
-    expect(mat).toEqual(Matrix.fromArray([
-        [1],
-        [2],
-        [3]
-    ]));
 });

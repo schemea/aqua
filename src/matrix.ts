@@ -1,4 +1,5 @@
 import {Vector2, Vector3} from "three";
+import {Vector} from "./vector";
 
 export class MatrixOperationError {
     constructor(public error: string) { }
@@ -195,31 +196,31 @@ export class Matrix3 extends SquareMatrix<4> {
         super(4);
     }
 
-    rotateX(theta: number) {
+    rotate(theta: number, axis: Vector3) {
+        axis = Vector.normalize(axis);
+        const x = axis.x;
+        const y = axis.y;
+        const z = axis.z;
+        const cos = Math.cos(theta);
+        const sin = Math.sin(theta);
         this.multiply(Matrix3.fromArray([
-            [1, 0, 0, 0],
-            [0, Math.cos(theta), -Math.sin(theta), 0],
-            [0, Math.sin(theta), Math.cos(theta), 0],
+            [cos + x ** 2 * (1 - cos), x * y * (1 - cos) - z * sin, x * z * (1 - cos) + y * sin, 0],
+            [y * x * (1 - cos) + z * sin, cos + y ** 2 * (1 - cos), y * z * (1 - cos) - x * sin, 0],
+            [z * x * (1 - cos) - y * sin, z * y * (1 - cos) + x * sin, cos + z ** 2 * (1 - cos), 0],
             [0, 0, 0, 1]
         ]));
+    }
+
+    rotateX(theta: number) {
+        this.rotate(theta, new Vector3(1, 0, 0));
     }
 
     rotateY(theta: number) {
-        this.multiply(Matrix3.fromArray([
-            [Math.cos(theta), 0, Math.sin(theta), 0],
-            [0, 1, 0, 0],
-            [-Math.sin(theta), 0, Math.cos(theta), 0],
-            [0, 0, 0, 1]
-        ]));
+        this.rotate(theta, new Vector3(0, 1, 0));
     }
 
     rotateZ(theta: number) {
-        this.multiply(Matrix3.fromArray([
-            [Math.cos(theta), -Math.sin(theta), 0, 0],
-            [Math.sin(theta), Math.cos(theta), 0, 0],
-            [0, 0, 1, 0],
-            [0, 0, 0, 1]
-        ]));
+        this.rotate(theta, new Vector3(0, 0, 1));
     }
 
     transform(vec: Vector3) {
