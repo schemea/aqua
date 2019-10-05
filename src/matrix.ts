@@ -143,7 +143,7 @@ export class Matrix<M extends number = number, N extends number = M> {
 }
 
 export class SquareMatrix<N extends number> extends Matrix<N, N> {
-    get size(): number { return this.data.length; }
+    get size(): N { return this.data.length as N; }
 
     constructor(n: N) {
         super(n, n);
@@ -157,8 +157,12 @@ export class SquareMatrix<N extends number> extends Matrix<N, N> {
         for (let i = 0; i < Math.min(values.length, n); ++i) {
             m.set(i, n - 1, values[i])
         }
-        const r = Matrix3.multiply(this, m);
 
+        this.multiply(m);
+    }
+
+    multiply(matrix: Matrix<N, N>) {
+        const r = SquareMatrix.multiply(this, matrix);
         this.data = r.data;
     }
 }
@@ -167,6 +171,33 @@ export class Matrix3 extends SquareMatrix<4> {
 
     constructor() {
         super(4);
+    }
+
+    rotateX(theta: number) {
+        this.multiply(Matrix3.fromArray([
+            [1, 0, 0, 0],
+            [0, Math.cos(theta), -Math.sin(theta), 0],
+            [0, Math.sin(theta), Math.cos(theta), 0],
+            [0, 0, 0, 1]
+        ]));
+    }
+
+    rotateY(theta: number) {
+        this.multiply(Matrix3.fromArray([
+            [Math.cos(theta), 0, Math.sin(theta), 0],
+            [0, 1, 0, 0],
+            [-Math.sin(theta), 0, Math.cos(theta), 0],
+            [0, 0, 0, 1]
+        ]));
+    }
+
+    rotateZ(theta: number) {
+        this.multiply(Matrix3.fromArray([
+            [Math.cos(theta), -Math.sin(theta), 0, 0],
+            [Math.sin(theta), Math.cos(theta), 0, 0],
+            [0, 0, 1, 0],
+            [0, 0, 0, 1]
+        ]));
     }
 
     transform(vec: Vector3) {

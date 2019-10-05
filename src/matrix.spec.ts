@@ -1,7 +1,23 @@
 import {Matrix, Matrix3} from "./matrix";
 import {Vector3} from "three";
 
-test('matrix from array', () => {
+function toRadian(deg: number) {
+    return deg * Math.PI / 180;
+}
+
+function round(value: number, digits: number = 5) {
+    return Math.round(value * 10 ** digits) / 10 ** digits;
+}
+
+function roundVec(vec: Vector3, digits: number = 5) {
+    vec.setX(round(vec.x, digits));
+    vec.setY(round(vec.y, digits));
+    vec.setZ(round(vec.z, digits));
+
+    return vec;
+}
+
+test('matrix: fromArray', () => {
     const a = Matrix.fromArray([
         [1, 0, 0],
         [0, 1, 0],
@@ -12,7 +28,7 @@ test('matrix from array', () => {
     expect(a.equals(b)).toBeTruthy();
 });
 
-test('add two matrices', () => {
+test('matrix: add', () => {
     const a = Matrix.fromArray([
         [1, 1, 1],
         [1, 1, 1],
@@ -27,7 +43,7 @@ test('add two matrices', () => {
     ]));
 });
 
-test('multiply matrix by identity', () => {
+test('matrix: multiply by identity', () => {
     const a = Matrix.fromArray([
         [1, 1, 1],
         [1, 1, 1],
@@ -38,7 +54,7 @@ test('multiply matrix by identity', () => {
     expect(Matrix.multiply(a, b)).toEqual(a);
 });
 
-test('multiply two square matrices', () => {
+test('matrix: multiply 2 squares matrix', () => {
     const a = Matrix.fromArray([
         [1, 2],
         [2, 0]
@@ -54,7 +70,7 @@ test('multiply two square matrices', () => {
     ]));
 });
 
-test('multiply 3x2 by 2x3 matrices', () => {
+test('matrix: multiply 3x2 by 2x3', () => {
     const a = Matrix.fromArray([
         [1, 2],
         [2, 4],
@@ -71,23 +87,32 @@ test('multiply 3x2 by 2x3 matrices', () => {
     ]));
 });
 
-test('transform vector3 by identity matrix3', () => {
+test('matrix3: transform', () => {
     const vec = new Vector3(1, 1, 1);
     const matrix = new Matrix3();
     expect(matrix.transform(vec)).toEqual(new Vector3(1, 1, 1));
 });
 
-test('apply translation matrix3 to vector3', () => {
+test('matrix3: translate', () => {
     const vec = new Vector3(3, 3, 2);
     const matrix = new Matrix3();
     matrix.translate(2, 1, 2);
     expect(matrix.transform(vec)).toEqual(new Vector3(5, 4, 4));
 });
 
-test('apply multiple translations to matrix3', () => {
+test('matrix3: multiple translates', () => {
     const vec = new Vector3(3, 3, 2);
     const matrix = new Matrix3();
     matrix.translate(2, 1, 2);
     matrix.translate(1, 1, 2);
     expect(matrix.transform(vec)).toEqual(new Vector3(6, 5, 6));
+});
+
+test('matrix3: rotateZ', () => {
+    const vec = new Vector3(1, 0, 0);
+    const matrix = new Matrix3();
+    matrix.rotateZ(toRadian(90));
+
+    const r = matrix.transform(vec);
+    expect(roundVec(r)).toEqual(new Vector3(0, 1, 0));
 });
