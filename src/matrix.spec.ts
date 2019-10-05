@@ -54,7 +54,7 @@ test('matrix: multiply by identity', () => {
     expect(Matrix.multiply(a, b)).toEqual(a);
 });
 
-test('matrix: multiply 2 squares matrix', () => {
+test('matrix: multiply 2 square matrices', () => {
     const a = Matrix.fromArray([
         [1, 2],
         [2, 0]
@@ -106,6 +106,24 @@ test('matrix3: multiple translates', () => {
     matrix.translate(2, 1, 2);
     matrix.translate(1, 1, 2);
     expect(matrix.transform(vec)).toEqual(new Vector3(6, 5, 6));
+});
+
+test('matrix3: rotateX', () => {
+    const vec = new Vector3(0, 1, 0);
+    const matrix = new Matrix3();
+    matrix.rotateX(toRadian(90));
+
+    const r = matrix.transform(vec);
+    expect(roundVec(r)).toEqual(new Vector3(0, 0, 1));
+});
+
+test('matrix3: rotateY', () => {
+    const vec = new Vector3(1, 0, 0);
+    const matrix = new Matrix3();
+    matrix.rotateY(toRadian(90));
+
+    const r = matrix.transform(vec);
+    expect(roundVec(r)).toEqual(new Vector3(0, 0, -1));
 });
 
 test('matrix3: rotateZ', () => {

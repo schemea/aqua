@@ -1,7 +1,5 @@
 import {Mesh, Vector3} from "three";
 import {Bounds} from "./bounds";
-import {NodeUtils} from "three/examples/jsm/nodes/core/NodeUtils";
-import {Direction} from "./direction";
 
 export class Element3D {
     volume!: Vector3;

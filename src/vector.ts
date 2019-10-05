@@ -1,5 +1,4 @@
-import {Camera, PerspectiveCamera, Quaternion, Vector2, Vector3} from "three";
-import {MaterialHandler} from "three/examples/jsm/loaders/obj2/shared/MaterialHandler";
+import {PerspectiveCamera, Quaternion, Vector3} from "three";
 
 export namespace Vector {
     export function relativeTo(origin: Vector3, target: Vector3): Vector3 {
@@ -27,7 +26,7 @@ export namespace Vector {
     export function fromSpherical(r: number, theta: number, phi: number) {
         const x = r * Math.sin(theta) * Math.cos(phi);
         const y = r * Math.sin(theta) * Math.sin(phi);
-        const z = r * Math.cos(theta)
+        const z = r * Math.cos(theta);
 
         return new Vector3(x, y, z);
     }
@@ -90,7 +89,7 @@ export namespace Vector {
         console.log("lookat", lookAt);
         const sphericalLookAt = Vector.toSpherical(lookAt);
         console.log(sphericalLookAt);
-        console.log("z", z)
+        console.log("z", z);
         const r = z / Math.cos(90 - sphericalLookAt.phi);
         console.log("r", r);
         return Vector.fromSpherical(r, sphericalLookAt.theta, sphericalLookAt.phi);

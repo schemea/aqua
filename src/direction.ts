@@ -6,4 +6,4 @@ export enum Direction {
     RIGHT,
     BACK,
     FRONT
-};
+}
