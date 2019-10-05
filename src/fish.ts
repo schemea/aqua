@@ -1,7 +1,7 @@
 import {Element3D} from "./element";
 import {BoxBufferGeometry, Color, Mesh, MeshPhysicalMaterial, Vector3} from "three";
 import {Direction} from "./direction";
-import {Vector} from "./math";
+import {Vector} from "./vector";
 import {World} from "./world";
 
 export class Fish extends Element3D {

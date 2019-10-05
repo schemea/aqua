@@ -19,7 +19,11 @@
     "webpack-cli": "^3.3.9",
     "webpack-dev-server": "^3.8.1"
   },
-  "devDependencies": {},
+  "devDependencies": {
+    "@types/jest": "^24.0.18",
+    "jest": "^24.9.0",
+    "ts-jest": "^24.1.0"
+  },
   "scripts": {
     "dev-server": "webpack-dev-server --open"
   },

@@ -1,7 +1,7 @@
-import {WebGLRenderer, Scene, PerspectiveCamera, Color, Vector3, AmbientLight, SpotLight} from "three";
+import {AmbientLight, Color, PerspectiveCamera, Scene, SpotLight, Vector3, WebGLRenderer} from "three";
 import {Aquarium} from "./aquarium";
 import {Fish} from "./fish";
-import {Vector} from "./math";
+import {Vector} from "./vector";
 
 export class World {
     renderer: WebGLRenderer;
@@ -24,7 +24,7 @@ export class World {
         });
 
         // this.scene.background = new Color(0x020210);
-        this.scene.background = new Color(0xffffff);
+        this.scene.background = new Color(0xdddddd);
 
         this.initialize();
     }
@@ -45,12 +45,12 @@ export class World {
             camera: this.camera,
             aquarium: this.aquarium
         });
-        const projection = Vector.projectMouse(event, this.camera, 0);
+        const projection = Vector.projectMouse(event, this.camera, -this.camera.position.z);
         console.log(projection);
         const fish = new Fish(this);
         const rand = (delta: number) => Math.random() * 2 * delta - delta;
         fish.movement = Vector.random().multiplyScalar(fish.speed + rand(0.05));
-        fish.position.copy(projection);
+        fish.position.copy(new Vector3(0, 0, 0));
         this.aquarium.addFish(fish);
         this.scene.add(fish.mesh);
     }

@@ -18,6 +18,10 @@ export class Aquarium extends Element3D {
             side: DoubleSide
         });
 
+        glassMaterial.reflectivity = 8;
+        glassMaterial.metalness = 1.5;
+        // glassMaterial.refractionRatio = 10.5;
+
         const transparentMaterial = new MeshBasicMaterial({
             transparent: true,
             opacity: 0
