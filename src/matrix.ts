@@ -142,16 +142,31 @@ export class Matrix<M extends number = number, N extends number = M> {
     }
 }
 
-export class Matrix3 extends Matrix<4, 4> {
-    constructor() {
-        super(4, 4);
+export class SquareMatrix<N extends number> extends Matrix<N, N> {
+    get size(): number { return this.data.length; }
+
+    constructor(n: N) {
+        super(n, n);
         setDiagonal(this, 1);
     }
 
-    translate(x, y, z): void {
-        this.set(0, 3, x);
-        this.set(1, 3, y);
-        this.set(2, 3, z);
+    translate(...values: number[]): void {
+        const n = this.size;
+        const m = new SquareMatrix(n);
+
+        for (let i = 0; i < Math.min(values.length, n); ++i) {
+            m.set(i, n - 1, values[i])
+        }
+        const r = Matrix3.multiply(this, m);
+
+        this.data = r.data;
+    }
+}
+
+export class Matrix3 extends SquareMatrix<4> {
+
+    constructor() {
+        super(4);
     }
 
     transform(vec: Vector3) {
@@ -163,4 +178,8 @@ export class Matrix3 extends Matrix<4, 4> {
             r.get(2, 0)
         )
     }
+}
+
+export interface Matrix3 {
+    translate(x: number, y: number, z: number);
 }

@@ -83,3 +83,11 @@ test('apply translation matrix3 to vector3', () => {
     matrix.translate(2, 1, 2);
     expect(matrix.transform(vec)).toEqual(new Vector3(5, 4, 4));
 });
+
+test('apply multiple translations to matrix3', () => {
+    const vec = new Vector3(3, 3, 2);
+    const matrix = new Matrix3();
+    matrix.translate(2, 1, 2);
+    matrix.translate(1, 1, 2);
+    expect(matrix.transform(vec)).toEqual(new Vector3(6, 5, 6));
+});
