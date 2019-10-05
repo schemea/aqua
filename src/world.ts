@@ -6,7 +6,7 @@ import {Vector} from "./vector";
 export class World {
     renderer: WebGLRenderer;
     scene: Scene = new Scene();
-    camera = new PerspectiveCamera();
+    camera = new PerspectiveCamera(35);
     light = new SpotLight(0xffffff);
     ambient = new AmbientLight(0xffffff);
 

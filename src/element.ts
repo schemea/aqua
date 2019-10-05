@@ -1,5 +1,15 @@
 import {Mesh, Vector3} from "three";
 import {Bounds} from "./bounds";
+import {Direction} from "./direction";
+
+interface BoundsLike {
+    left: number;
+    right: number;
+    bottom: number;
+    top: number;
+    back: number;
+    front: number;
+}
 
 export class Element3D {
     volume!: Vector3;
@@ -43,7 +53,7 @@ export class Element3D {
         const bounds = this.bounds;
         const oBounds = other.bounds;
 
-        if(minDistance) {
+        if (minDistance) {
             oBounds.x -= minDistance;
             oBounds.y -= minDistance;
             oBounds.z -= minDistance;
@@ -60,6 +70,27 @@ export class Element3D {
             return Axe.Z;
         else
             return Axe.NONE;
+    }
+
+    contains(element: BoundsLike | { bounds: BoundsLike }): Direction {
+        if ("bounds" in element && !("back" in element))
+            element = element.bounds;
+
+        const bounds = this.bounds;
+        if (element.left < bounds.left)
+            return Direction.LEFT;
+        else if (element.right > bounds.right)
+            return Direction.RIGHT;
+        else if (element.bottom < bounds.bottom)
+            return Direction.BOTTOM;
+        else if (element.top > bounds.top)
+            return Direction.TOP;
+        else if (element.back < bounds.back)
+            return Direction.BACK;
+        else if (element.front > bounds.front)
+            return Direction.FRONT;
+        else
+            return Direction.NONE;
     }
 
     movement?: Vector3;

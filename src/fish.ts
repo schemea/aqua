@@ -47,10 +47,10 @@ export class Fish extends Element3D {
 
         super.update(delta);
 
-        const exceedsGlass = this.aquarium.exceedsGlass(this);
-        if (exceedsGlass !== Direction.NONE && this.movement) {
+        const direction = this.aquarium.contains(this);
+        if (direction !== Direction.NONE && this.movement) {
             this.position.copy(this.oldPosition);
-            switch (exceedsGlass) {
+            switch (direction) {
                 case Direction.LEFT:
                 case Direction.RIGHT:
                     this.movement.setX(this.movement.x * -1);

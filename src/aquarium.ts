@@ -1,7 +1,6 @@
 import {BoxGeometry, Color, DoubleSide, Mesh, MeshBasicMaterial, MeshPhysicalMaterial, Vector3} from "three";
 import {Fish} from "./fish";
 import {Element3D} from "./element";
-import {Direction} from "./direction";
 
 export class Aquarium extends Element3D {
     fishes: Fish[] = [];
@@ -34,26 +33,6 @@ export class Aquarium extends Element3D {
 
         this.mesh = new Mesh(geometry, [glassMaterial, transparentMaterial]);
 
-    }
-
-    exceedsGlass(element: Element3D) {
-        const bounds = this.bounds;
-        const elBounds = element.bounds;
-
-        if (elBounds.left < bounds.left)
-            return Direction.LEFT;
-        else if (elBounds.right > bounds.right)
-            return Direction.RIGHT;
-        else if (elBounds.bottom < bounds.bottom)
-            return Direction.BOTTOM;
-        else if (elBounds.top > bounds.top)
-            return Direction.TOP;
-        else if (elBounds.back < bounds.back)
-            return Direction.BACK;
-        else if (elBounds.front > bounds.front)
-            return Direction.FRONT;
-        else
-            return Direction.NONE;
     }
 
     update(delta: DOMHighResTimeStamp) {
