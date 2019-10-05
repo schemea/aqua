@@ -24,6 +24,13 @@ function createUninitializedMatrix<M extends number, N extends number>(m: M, n: 
     return mat;
 }
 
+function vectorFromMatrix<T, N extends number>(constructor: { new(...args: number[]): T }, matrix: Matrix<N, 1>): T {
+    const args: number[] = [];
+    for (let i = 0; i < matrix.dimensions.m; ++i)
+        args.push(matrix.get(i, 0));
+    return new constructor(...args);
+}
+
 export class Matrix<M extends number = number, N extends number = M> {
     data: number[][] = [];
 
@@ -77,8 +84,8 @@ export class Matrix<M extends number = number, N extends number = M> {
         return newMatrix;
     }
 
-    static identity<N extends number>(n: N): Matrix<N, N> {
-        const matrix = new Matrix(n, n);
+    static identity<N extends number>(n: N): SquareMatrix<N> {
+        const matrix = new SquareMatrix(n);
         setDiagonal(matrix, 1);
         return matrix;
     }
@@ -222,50 +229,27 @@ export class Matrix3 extends SquareMatrix<4> {
         ]));
     }
 
-    rotateX(theta: number) {
-        this.rotate(theta, new Vector3(1, 0, 0));
-    }
+    rotateX(theta: number) { this.rotate(theta, new Vector3(1, 0, 0)); }
 
-    rotateY(theta: number) {
-        this.rotate(theta, new Vector3(0, 1, 0));
-    }
+    rotateY(theta: number) { this.rotate(theta, new Vector3(0, 1, 0)); }
 
-    rotateZ(theta: number) {
-        this.rotate(theta, new Vector3(0, 0, 1));
-    }
+    rotateZ(theta: number) { this.rotate(theta, new Vector3(0, 0, 1)); }
 
-    translateX(x: number): void {
-        this.translate(x, 0, 0);
-    }
+    translateX(x: number): void { this.translate(x, 0, 0); }
 
-    translateY(y: number): void {
-        this.translate(0, y, 0);
-    }
+    translateY(y: number): void { this.translate(0, y, 0); }
 
-    translateZ(z: number): void {
-        this.translate(0, 0, z);
-    }
+    translateZ(z: number): void { this.translate(0, 0, z); }
 
-    scaleX(x: number): void {
-        this.scale(x, 1, 1);
-    }
+    scaleX(x: number): void { this.scale(x, 1, 1); }
 
-    scaleY(y: number): void {
-        this.scale(1, y, 1);
-    }
+    scaleY(y: number): void { this.scale(1, y, 1); }
 
-    scaleZ(z: number): void {
-        this.scale(1, 1, z);
-    }
+    scaleZ(z: number): void { this.scale(1, 1, z); }
 
     transform(vec: Vector3) {
-        const vecMatrix = Matrix.fromVector(vec, 1);
-        const r = Matrix.multiply(this, vecMatrix);
-        return new Vector3(
-            r.get(0, 0),
-            r.get(1, 0),
-            r.get(2, 0)
-        )
+        const r = Matrix.multiply(this, Matrix.fromVector(vec, 1));
+        return vectorFromMatrix(Vector3, r);
     }
 }
 

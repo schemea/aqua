@@ -114,17 +114,21 @@ test('matrix3: translate', () => {
 
 test('matrix3: scale', () => {
     const vec = new Vector3(3, 3, 2);
-    let matrix = new Matrix3();
-    matrix.scale(2, 3, 0.5);
-    expect(matrix.transform(vec)).toEqual(new Vector3(6, 9, 1));
-    matrix = new Matrix3();
-    matrix.scaleX(2);
-    matrix.scaleY(2);
-    matrix.scaleZ(2);
-    matrix.scaleX(0.25);
-    matrix.scaleY(3);
-    matrix.scaleZ(10);
-    expect(matrix.transform(vec)).toEqual(new Vector3(1.5, 18, 40));
+    {
+        const matrix = new Matrix3();
+        matrix.scale(2, 3, 0.5);
+        expect(matrix.transform(vec)).toEqual(new Vector3(6, 9, 1));
+    }
+    {
+        const matrix = new Matrix3();
+        matrix.scaleX(2);
+        matrix.scaleY(2);
+        matrix.scaleZ(2);
+        matrix.scaleX(0.25);
+        matrix.scaleY(3);
+        matrix.scaleZ(10);
+        expect(matrix.transform(vec)).toEqual(new Vector3(1.5, 18, 40));
+    }
 });
 
 test('matrix3: rotate', () => {
