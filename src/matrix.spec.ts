@@ -43,48 +43,48 @@ test('matrix: add', () => {
     ]));
 });
 
-test('matrix: multiply by identity', () => {
-    const a = Matrix.fromArray([
-        [1, 1, 1],
-        [1, 1, 1],
-        [1, 1, 1]
-    ]);
-    const b = Matrix.identity(3);
+test('matrix: multiply', () => {
+    {
+        const a = Matrix.fromArray([
+            [1, 1, 1],
+            [1, 1, 1],
+            [1, 1, 1]
+        ]);
+        const b = Matrix.identity(3);
 
-    expect(Matrix.multiply(a, b)).toEqual(a);
-});
+        expect(Matrix.multiply(a, b)).toEqual(a);
+    }
+    {
+        const a = Matrix.fromArray([
+            [1, 2],
+            [2, 0]
+        ]);
+        const b = Matrix.fromArray([
+            [3, 1],
+            [-1, -1]
+        ]);
 
-test('matrix: multiply 2 square matrices', () => {
-    const a = Matrix.fromArray([
-        [1, 2],
-        [2, 0]
-    ]);
-    const b = Matrix.fromArray([
-        [3, 1],
-        [-1, -1]
-    ]);
-
-    expect(Matrix.multiply(a, b)).toEqual(Matrix.fromArray([
-        [1, -1],
-        [6, 2]
-    ]));
-});
-
-test('matrix: multiply 3x2 by 2x3', () => {
-    const a = Matrix.fromArray([
-        [1, 2],
-        [2, 4],
-        [7, -2]
-    ]);
-    const b = Matrix.fromArray([
-        [1, 1, 0],
-        [-1, 0, -3]
-    ]);
-    expect(Matrix.multiply(a, b)).toEqual(Matrix.fromArray([
-        [-1, 1, -6],
-        [-2, 2, -12],
-        [9, 7, 6]
-    ]));
+        expect(Matrix.multiply(a, b)).toEqual(Matrix.fromArray([
+            [1, -1],
+            [6, 2]
+        ]));
+    }
+    {
+        const a = Matrix.fromArray([
+            [1, 2],
+            [2, 4],
+            [7, -2]
+        ]);
+        const b = Matrix.fromArray([
+            [1, 1, 0],
+            [-1, 0, -3]
+        ]);
+        expect(Matrix.multiply(a, b)).toEqual(Matrix.fromArray([
+            [-1, 1, -6],
+            [-2, 2, -12],
+            [9, 7, 6]
+        ]));
+    }
 });
 
 test('matrix: transpose', () => {
@@ -108,39 +108,48 @@ test('matrix3: translate', () => {
     const matrix = new Matrix3();
     matrix.translate(2, 1, 2);
     expect(matrix.transform(vec)).toEqual(new Vector3(5, 4, 4));
+    matrix.translate(-5, 0.5, 25);
+    expect(matrix.transform(vec)).toEqual(new Vector3(0, 4.5, 29));
 });
 
-test('matrix3: multiple translates', () => {
+test('matrix3: scale', () => {
     const vec = new Vector3(3, 3, 2);
-    const matrix = new Matrix3();
-    matrix.translate(2, 1, 2);
-    matrix.translate(1, 1, 2);
-    expect(matrix.transform(vec)).toEqual(new Vector3(6, 5, 6));
+    let matrix = new Matrix3();
+    matrix.scale(2, 3, 0.5);
+    expect(matrix.transform(vec)).toEqual(new Vector3(6, 9, 1));
+    matrix = new Matrix3();
+    matrix.scaleX(2);
+    matrix.scaleY(2);
+    matrix.scaleZ(2);
+    matrix.scaleX(0.25);
+    matrix.scaleY(3);
+    matrix.scaleZ(10);
+    expect(matrix.transform(vec)).toEqual(new Vector3(1.5, 18, 40));
 });
 
-test('matrix3: rotateX', () => {
-    const vec = new Vector3(0, 1, 0);
-    const matrix = new Matrix3();
-    matrix.rotateX(toRadian(90));
+test('matrix3: rotate', () => {
+    {
+        const vec = new Vector3(0, 1, 0);
+        const matrix = new Matrix3();
+        matrix.rotateX(toRadian(90));
 
-    const r = matrix.transform(vec);
-    expect(roundVec(r)).toEqual(new Vector3(0, 0, 1));
-});
+        const r = matrix.transform(vec);
+        expect(roundVec(r)).toEqual(new Vector3(0, 0, 1));
+    }
+    {
+        const vec = new Vector3(1, 0, 0);
+        const matrix = new Matrix3();
+        matrix.rotateY(toRadian(90));
 
-test('matrix3: rotateY', () => {
-    const vec = new Vector3(1, 0, 0);
-    const matrix = new Matrix3();
-    matrix.rotateY(toRadian(90));
+        const r = matrix.transform(vec);
+        expect(roundVec(r)).toEqual(new Vector3(0, 0, -1));
+    }
+    {
+        const vec = new Vector3(1, 0, 0);
+        const matrix = new Matrix3();
+        matrix.rotateZ(toRadian(90));
 
-    const r = matrix.transform(vec);
-    expect(roundVec(r)).toEqual(new Vector3(0, 0, -1));
-});
-
-test('matrix3: rotateZ', () => {
-    const vec = new Vector3(1, 0, 0);
-    const matrix = new Matrix3();
-    matrix.rotateZ(toRadian(90));
-
-    const r = matrix.transform(vec);
-    expect(roundVec(r)).toEqual(new Vector3(0, 1, 0));
+        const r = matrix.transform(vec);
+        expect(roundVec(r)).toEqual(new Vector3(0, 1, 0));
+    }
 });

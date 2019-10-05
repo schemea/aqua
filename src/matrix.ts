@@ -173,11 +173,22 @@ export class SquareMatrix<N extends number> extends Matrix<N, N> {
         setDiagonal(this, 1);
     }
 
+    scale(...values: number[]) {
+        const n = this.size;
+        const m = new SquareMatrix(n);
+
+        for (let i = 0; i < Math.min(values.length, n - 1); ++i) {
+            m.set(i, i, values[i])
+        }
+
+        this.multiply(m);
+    }
+
     translate(...values: number[]): void {
         const n = this.size;
         const m = new SquareMatrix(n);
 
-        for (let i = 0; i < Math.min(values.length, n); ++i) {
+        for (let i = 0; i < Math.min(values.length, n - 1); ++i) {
             m.set(i, n - 1, values[i])
         }
 
@@ -223,6 +234,30 @@ export class Matrix3 extends SquareMatrix<4> {
         this.rotate(theta, new Vector3(0, 0, 1));
     }
 
+    translateX(x: number): void {
+        this.translate(x, 0, 0);
+    }
+
+    translateY(y: number): void {
+        this.translate(0, y, 0);
+    }
+
+    translateZ(z: number): void {
+        this.translate(0, 0, z);
+    }
+
+    scaleX(x: number): void {
+        this.scale(x, 1, 1);
+    }
+
+    scaleY(y: number): void {
+        this.scale(1, y, 1);
+    }
+
+    scaleZ(z: number): void {
+        this.scale(1, 1, z);
+    }
+
     transform(vec: Vector3) {
         const vecMatrix = Matrix.fromVector(vec, 1);
         const r = Matrix.multiply(this, vecMatrix);
@@ -236,4 +271,6 @@ export class Matrix3 extends SquareMatrix<4> {
 
 export interface Matrix3 {
     translate(x: number, y: number, z: number);
+
+    scale(x: number, y: number, z: number);
 }
