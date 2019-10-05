@@ -1,6 +1,6 @@
 import {Vector2, Vector3} from "three";
 
-export class ErrorMatrix {
+export class MatrixOperationError {
     constructor(public error: string) { }
 }
 
@@ -13,6 +13,14 @@ function setDiagonal<N extends number>(matrix: Matrix<N, N>, value: number) {
     for (let i = 0; i < matrix.dimensions.m; ++i) {
         matrix.set(i, i, value);
     }
+}
+
+function createUninitializedMatrix<M extends number, N extends number>(m: M, n: N, mat: Matrix<M, N> = Object.create(Matrix.prototype)) {
+    mat.data = new Array(m);
+    for (let i = 0; i < m; ++i) {
+        mat.data[i] = new Array(n);
+    }
+    return mat;
 }
 
 export class Matrix<M extends number = number, N extends number = M> {
@@ -80,7 +88,7 @@ export class Matrix<M extends number = number, N extends number = M> {
             d = 3;
         else if (vector instanceof Vector2)
             d = 2;
-        const matrix = new Matrix<N, 1>(d + pad as N, 1);
+        const matrix = createUninitializedMatrix<N, 1>(d + pad as N, 1);
         matrix.set(0, 0, vector.x);
         matrix.set(1, 0, vector.y);
         matrix.set(1, 0, vector.y);
@@ -95,7 +103,7 @@ export class Matrix<M extends number = number, N extends number = M> {
     }
 
     static fromArray<M extends number = number, N extends number = number>(data: number[][]): Matrix<M, N> {
-        const matrix = new Matrix<M, N>(data.length as M, data[0].length as N);
+        const matrix = createUninitializedMatrix<M, N>(data.length as M, data[0].length as N);
         for (let i = 0; i < data.length; ++i) {
             for (let j = 0; j < data[0].length; ++j) {
                 matrix.set(i, j, data[i][j]);
@@ -105,7 +113,7 @@ export class Matrix<M extends number = number, N extends number = M> {
     }
 
     static add<M extends number, N extends number, P extends number, Q extends number>(a: Matrix<M, N>, b: Matrix<P, Q>): Matrix<M, N> {
-        const r = new Matrix(a.dimensions.m, a.dimensions.n);
+        const r = createUninitializedMatrix(a.dimensions.m, a.dimensions.n);
         for (let i = 0; i < a.dimensions.m; ++i) {
             for (let j = 0; j < a.dimensions.n; ++j) {
                 const value = a.get(i, j) + b.get(i, j);
@@ -115,14 +123,28 @@ export class Matrix<M extends number = number, N extends number = M> {
         return r;
     }
 
+    static transpose<M extends number, N extends number>(matrix: Matrix<M, N>) {
+        const m = matrix.dimensions.m;
+        const n = matrix.dimensions.n;
+        const transposed = createUninitializedMatrix(n, m);
+
+        for (let i = 0; i < m; ++i) {
+            for (let j = 0; j < n; ++j) {
+                transposed.set(j, i, matrix.get(i, j));
+            }
+        }
+
+        return transposed;
+    }
+
     static multiply<M extends number, N extends number, P extends number>(a: Matrix<M, N>, b: Matrix<N, P>): Matrix<M, P> {
         const m = a.dimensions.m;
         const n = a.dimensions.n;
         const p = b.dimensions.n;
 
         if (n !== b.dimensions.m)
-            throw new ErrorMatrix("Matrix dimension does not match");
-        const result = new Matrix(m, p);
+            throw new MatrixOperationError("Matrix dimension does not match");
+        const result = createUninitializedMatrix(m, p);
 
         function computeCase(i: number, j: number): number {
             let value = 0;
