@@ -51,32 +51,49 @@ export namespace Vector {
         return lookAt;
     }
 
+    export function rotateX(vector: Vector3, angle: number) {
+        const y = vector.y;
+        const z = vector.z;
+        vector.setY(y * Math.cos(angle) - z * Math.sin(angle));
+        vector.setZ(y * Math.sin(angle) + z * Math.cos(angle));
+        return vector;
+    }
+
     export function rotateY(vector: Vector3, angle: number) {
-        const norm = Math.sqrt(vector.z ** 2 + vector.y ** 2);
-        const org = Math.atan(vector.x / vector.z);
-        angle += org;
-        vector.setX(norm * Math.sin(angle));
-        vector.setY(norm * Math.cos(angle));
+        const x = vector.x;
+        const z = vector.z;
+        vector.setX(x * Math.cos(angle) + z * Math.sin(angle));
+        vector.setZ(-x * Math.sin(angle) + z * Math.cos(angle));
+        return vector;
+    }
+
+    export function rotateZ(vector: Vector3, angle: number) {
+        const x = vector.x;
+        const y = vector.y;
+        vector.setX(x * Math.cos(angle) - y * Math.sin(angle));
+        vector.setY(x * Math.sin(angle) + y * Math.cos(angle));
         return vector;
     }
 
     export function projectMouse(position: { x: number, y: number }, camera: PerspectiveCamera, z: number) {
         const fov = camera.fov * Math.PI / 180;
-
         const d = 1 / Math.tan(fov / 2);
-        const x = position.x / innerWidth - 0.5;
-        const y = -(position.y / innerHeight - 0.5);
+        const x = position.x * 2 / innerWidth - 1;
+        const y = position.y * 2 / innerHeight - 1;
         const xalpha = Math.atan(x / d);
         const yalpha = Math.atan(y / d);
 
-        console.log(fov / 2, yalpha);
         const lookAt = getLookAt(camera);
-        // lookAt.phi += xalpha;
-        // lookAt.theta += yalpha;
-        rotateY(lookAt, -0.5);
         // rotateX(lookAt, yalpha);
+        const test = rotateX(lookAt.clone(), 1);
+        const three = lookAt.applyAxisAngle(new Vector3(1, 0, 0), 1);
+        console.log("lookat", lookAt);
         const sphericalLookAt = Vector.toSpherical(lookAt);
-        return Vector.fromSpherical(z / Math.cos(sphericalLookAt.phi), sphericalLookAt.theta, sphericalLookAt.phi);
+        console.log(sphericalLookAt);
+        console.log("z", z)
+        const r = z / Math.cos(90 - sphericalLookAt.phi);
+        console.log("r", r);
+        return Vector.fromSpherical(r, sphericalLookAt.theta, sphericalLookAt.phi);
     }
 }
 
