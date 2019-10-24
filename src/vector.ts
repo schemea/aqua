@@ -1,4 +1,6 @@
 import {PerspectiveCamera, Quaternion, Vector3} from "three";
+import {Matrix3} from "./matrix";
+
 
 export namespace Vector {
     export function relativeTo(origin: Vector3, target: Vector3): Vector3 {
@@ -48,6 +50,13 @@ export namespace Vector {
         const lookAt = new Vector3(0, 0, -1);
         lookAt.applyQuaternion(obj.quaternion);
         return lookAt;
+    }
+
+    function rotate(vector: Vector3, angle: number, axis: Vector3) {
+        const mat = new Matrix3();
+        mat.rotate(angle, axis);
+        mat.transform(vector);
+        return vector;
     }
 
     export function rotateX(vector: Vector3, angle: number) {

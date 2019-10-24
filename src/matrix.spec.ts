@@ -1,4 +1,4 @@
-import {Matrix, Matrix3} from "./matrix";
+import {Matrix, Matrix3, SquareMatrix} from "./matrix";
 import {Vector3} from "three";
 
 function toRadian(deg: number) {
@@ -15,6 +15,11 @@ function roundVec(vec: Vector3, digits: number = 5) {
     vec.setZ(round(vec.z, digits));
 
     return vec;
+}
+
+function roundMatrix(mat: Matrix, digits: number = 5) {
+    mat.forEach((value, i, j) => mat.set(i, j, round(value, digits)));
+    return mat;
 }
 
 test('matrix: fromArray', () => {
@@ -88,13 +93,28 @@ test('matrix: multiply', () => {
 });
 
 test('matrix: transpose', () => {
-    let mat = Matrix.fromArray([[1, 2, 3]]);
-    mat = Matrix.transpose(mat);
-    expect(mat).toEqual(Matrix.fromArray([
-        [1],
-        [2],
-        [3]
-    ]));
+    {
+        let mat = Matrix.fromArray([[1, 2, 3]]);
+        mat = Matrix.transpose(mat);
+        expect(mat).toEqual(Matrix.fromArray([
+            [1],
+            [2],
+            [3]
+        ]));
+    }
+    {
+        let mat = Matrix.fromArray([
+            [1, 2, 3],
+            [4, 5, 6],
+            [7, 8, 9]
+        ]);
+        mat = Matrix.transpose(mat);
+        expect(mat).toEqual(Matrix.fromArray([
+            [1, 4, 7],
+            [2, 5, 8],
+            [3, 6, 9]
+        ]));
+    }
 });
 
 test('matrix3: transform', () => {
@@ -156,4 +176,16 @@ test('matrix3: rotate', () => {
         const r = matrix.transform(vec);
         expect(roundVec(r)).toEqual(new Vector3(0, 1, 0));
     }
+});
+
+test('square: inverse', () => {
+    const n = Math.round(3);
+    const mat = new SquareMatrix(n);
+    mat.forEach((value, i, j) => mat.set(i, j, Math.floor(Math.random() * 100)));
+
+    const inv = mat.clone();
+    inv.inverse();
+    inv.multiply(mat);
+
+    expect(roundMatrix(inv)).toEqual(Matrix.identity(n));
 });
