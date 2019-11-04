@@ -95,7 +95,7 @@ test('matrix: multiply', () => {
 test('matrix: transpose', () => {
     {
         let mat = Matrix.fromArray([[1, 2, 3]]);
-        mat = Matrix.transpose(mat);
+        mat = (<Matrix<number, number> & SquareMatrix<number>>Matrix.transpose(mat));
         expect(mat).toEqual(Matrix.fromArray([
             [1],
             [2],
@@ -108,7 +108,7 @@ test('matrix: transpose', () => {
             [4, 5, 6],
             [7, 8, 9]
         ]);
-        mat = Matrix.transpose(mat);
+        mat = (<Matrix<number, number> & SquareMatrix<number>>Matrix.transpose(mat));
         expect(mat).toEqual(Matrix.fromArray([
             [1, 4, 7],
             [2, 5, 8],
@@ -178,14 +178,57 @@ test('matrix3: rotate', () => {
     }
 });
 
+test("matrix2: determinant", () => {
+    const matrix = Matrix.fromArray([
+        [1, 2],
+        [3, 4]
+    ]);
+
+    expect(matrix.determinant()).toEqual(-2);
+});
+
+test("matrix3: determinant", () => {
+    const matrix = Matrix.fromArray([
+        [1, 2, 1],
+        [2, -1, 0],
+        [0, 3, 1]
+    ]);
+
+    expect(matrix.determinant()).toEqual(1);
+});
+
 test('square: inverse', () => {
     const n = Math.round(3);
     const mat = new SquareMatrix(n);
     mat.forEach((value, i, j) => mat.set(i, j, Math.floor(Math.random() * 100)));
 
-    const inv = mat.clone();
-    inv.inverse();
-    inv.multiply(mat);
+    expect(roundMatrix(Matrix.multiply(mat, mat.inverse()))).toEqual(Matrix.identity(n));
+});
 
-    expect(roundMatrix(inv)).toEqual(Matrix.identity(n));
+test("adjugate", () => {
+    const mat = Matrix.fromArray([
+        [1, 2, 3],
+        [0, 1, 2],
+        [-1, -4, -1]
+    ]);
+    expect(mat.adjugate()).toEqual(Matrix.fromArray([
+        [7, -2, 1],
+        [-10, 2, 2],
+        [1, -2, 1]
+    ]));
+});
+
+test("inv", () => {
+    const inv = Matrix.fromArray([
+        [1, 1],
+        [0, 1]
+    ]);
+    const I = Matrix.multiply(
+        Matrix.fromArray([
+            [1, 1],
+            [0, 1]
+        ]),
+        inv.inverse()
+    );
+    expect(I).toEqual(Matrix.identity(2));
 });

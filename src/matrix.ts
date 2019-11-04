@@ -55,26 +55,6 @@ export class Matrix<M extends number = number, N extends number = M> {
         };
     }
 
-    set(i: number, j: number, value: number): void {
-        this.data[i][j] = value;
-    }
-
-    get(i: number, j: number): number | undefined {
-        const row = this.data[i];
-        return row ? row[j] : undefined;
-    }
-
-    equals(other: Matrix) {
-        const dimensions = this.dimensions;
-        for (let i = 0; i < dimensions.m; ++i) {
-            for (let j = 0; j < dimensions.n; ++j) {
-                if (this.get(i, j) !== other.get(i, j))
-                    return false;
-            }
-        }
-        return true;
-    }
-
     static initialize(mat: Matrix, m: number, n: number) {
         mat.data = new Array(m);
         for (let i = 0; i < m; ++i) {
@@ -82,11 +62,11 @@ export class Matrix<M extends number = number, N extends number = M> {
         }
     }
 
-    static create<M extends number, N extends number>(m: M, n: N, mat?: Matrix<M, N>): AutoMatrix<M, N> {
+    static create<T extends Matrix>(m: number, n: number, mat?: Matrix): T {
         if (!mat)
             mat = Object.create(getMatrixPrototype(m, n));
         Matrix.initialize(mat, m, n);
-        return mat as AutoMatrix<M, N>;
+        return mat as T;
     }
 
     static fromVector<N extends number = number>(vector: Vector3 | Vector2, pad = 1): Matrix<N, 1> {
@@ -95,7 +75,7 @@ export class Matrix<M extends number = number, N extends number = M> {
             d = 3;
         else if (vector instanceof Vector2)
             d = 2;
-        const matrix = Matrix.create<N, 1>(d + pad as N, 1);
+        const matrix = Matrix.create(d + pad, 1) as Matrix<N, 1>;
         matrix.set(0, 0, vector.x);
         matrix.set(1, 0, vector.y);
         matrix.set(1, 0, vector.y);
@@ -110,7 +90,7 @@ export class Matrix<M extends number = number, N extends number = M> {
     }
 
     static fromArray<M extends number = number, N extends number = number>(data: number[][]): AutoMatrix<M, N> {
-        const matrix = Matrix.create<M, N>(data.length as M, data[0].length as N);
+        const matrix = Matrix.create(data.length as M, data[0].length as N) as AutoMatrix<M, N>;
         for (let i = 0; i < data.length; ++i) {
             for (let j = 0; j < data[0].length; ++j) {
                 matrix.set(i, j, data[i][j]);
@@ -120,7 +100,7 @@ export class Matrix<M extends number = number, N extends number = M> {
     }
 
     static add<M extends number, N extends number, P extends number, Q extends number>(a: Matrix<M, N>, b: Matrix<P, Q>): AutoMatrix<M, N> {
-        const r = Matrix.create(a.dimensions.m, a.dimensions.n);
+        const r = Matrix.create(a.dimensions.m, a.dimensions.n) as AutoMatrix<M, N>;
         for (let i = 0; i < a.dimensions.m; ++i) {
             for (let j = 0; j < a.dimensions.n; ++j) {
                 const value = a.get(i, j) + b.get(i, j);
@@ -151,7 +131,7 @@ export class Matrix<M extends number = number, N extends number = M> {
 
         if (n !== b.dimensions.m)
             throw new MatrixOperationError("Matrix dimension does not match");
-        const result = Matrix.create(m, p);
+        const result = Matrix.create(m, p) as AutoMatrix<M, P>;
 
         function computeCase(i: number, j: number): number {
             let value = 0;
@@ -176,7 +156,6 @@ export class Matrix<M extends number = number, N extends number = M> {
         return newMat;
     }
 
-
     static identity<N extends number>(n: N): SquareMatrix<N> {
         const matrix = new SquareMatrix(n);
         setDiagonal(matrix, 1);
@@ -191,6 +170,26 @@ export class Matrix<M extends number = number, N extends number = M> {
             return arr;
         });
         return newMat;
+    }
+
+    set(i: number, j: number, value: number): void {
+        this.data[i][j] = value;
+    }
+
+    get(i: number, j: number): number | undefined {
+        const row = this.data[i];
+        return row ? row[j] : undefined;
+    }
+
+    equals(other: Matrix) {
+        const dimensions = this.dimensions;
+        for (let i = 0; i < dimensions.m; ++i) {
+            for (let j = 0; j < dimensions.n; ++j) {
+                if (this.get(i, j) !== other.get(i, j))
+                    return false;
+            }
+        }
+        return true;
     }
 
     multiplyScalar(scalar: number) {
@@ -334,12 +333,12 @@ export function createMatrixView<T extends Matrix = Matrix>(matrix: Matrix, rows
 }
 
 export class SquareMatrix<N extends number = number> extends Matrix<N, N> {
-    get size(): N { return this.data.length as N; }
-
     constructor(n: N) {
         super(n, n);
         setDiagonal(this, 1);
     }
+
+    get size(): N { return this.data.length as N; }
 
     determinant(): number {
         const _this = this;
@@ -370,7 +369,7 @@ export class SquareMatrix<N extends number = number> extends Matrix<N, N> {
         return det;
     }
 
-    inverse(): void {
+    adjugate(): SquareMatrix<N> {
         const _this = this;
 
         function exclude(i: number) {
@@ -383,23 +382,28 @@ export class SquareMatrix<N extends number = number> extends Matrix<N, N> {
             return indices;
         }
 
-        const minors = Matrix.create(this.dimensions.m, this.dimensions.n);
-
-        this.forEach((value, i, j) => {
-            const sign = (i + j) % 2 === 0 ? 1 : -1;
-            const view = createMatrixView<SquareMatrix>(this, exclude(i), exclude(j));
-            minors.set(i, j, view.determinant() * sign);
-        });
-
-        const transposed = Matrix.transpose(this);
-
-        let det = 0;
-        for (let i = 0; i < this.dimensions.m; ++i) {
-            det += this.get(0, i) * minors.get(0, i);
+        function computeCell(i, j): number {
+            const det = createMatrixView<SquareMatrix>(_this, exclude(i), exclude(j)).determinant();
+            if (i === 1 && j === 0)
+                debugger;
+            return (-1) ** (i + j) * det;
         }
-        transposed.multiplyScalar(1 / det);
 
-        this.assign(transposed);
+        const adjugate = Matrix.create<SquareMatrix<N>>(this.dimensions.m, this.dimensions.n);
+        for (let i = 0; i < this.dimensions.m; i++) {
+            for (let j = 0; j < this.dimensions.n; j++) {
+                adjugate.set(i, j, computeCell(i, j));
+            }
+        }
+
+        return adjugate;
+    }
+
+    inverse(): SquareMatrix<N> {
+        const adj = this.adjugate();
+        adj.multiplyScalar(1 / this.determinant());
+
+        return Matrix.transpose(adj) as SquareMatrix<N>;
     }
 
     scale(...values: number[]) {
