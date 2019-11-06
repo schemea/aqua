@@ -17,14 +17,14 @@ function setDiagonal<N extends number>(matrix: Matrix<N, N>, value: number) {
 }
 
 type AutoMatrix<M extends number, N extends number> = Matrix<M, N> & ([N] extends [M] ?
-    (N extends 3 ? Matrix3 : SquareMatrix<N>)
+    (N extends 3 ? Matrix4 : SquareMatrix<N>)
     : Matrix<M, N>);
 
 function getMatrixPrototype<M extends number, N extends number>(m: M, n: N): AutoMatrix<M, N> {
     if (m as number !== n)
         return Matrix.prototype as AutoMatrix<M, N>;
     else if (m === 3)
-        return Matrix3.prototype as AutoMatrix<M, N>;
+        return Matrix4.prototype as AutoMatrix<M, N>;
     else
         return SquareMatrix.prototype as AutoMatrix<M, N>;
 }
@@ -37,29 +37,16 @@ function vectorFromMatrix<T, N extends number>(constructor: { new(...args: numbe
 }
 
 export class Matrix<M extends number = number, N extends number = M> {
-    protected data: number[][] = [];
+    dimensions: Dimension<M, N>;
+    protected data: number[] = [];
 
     constructor(m: M, n: N) {
-        this.data = new Array(m);
-        for (let i = 0; i < m; ++i) {
-            const row = this.data[i] = new Array(n);
-            row.fill(0);
-        }
-    }
-
-    get dimensions(): Dimension<M, N> {
-        const first = this.data[0];
-        return {
-            m: this.data.length as M,
-            n: (first ? first.length : 0) as N
-        };
+        Matrix.initialize(this, m, n);
     }
 
     static initialize(mat: Matrix, m: number, n: number) {
-        mat.data = new Array(m);
-        for (let i = 0; i < m; ++i) {
-            mat.data[i] = new Array(n);
-        }
+        mat.data = new Array(m * n);
+        mat.dimensions = {m, n};
     }
 
     static create<T extends Matrix>(m: number, n: number, mat?: Matrix): T {
@@ -150,35 +137,31 @@ export class Matrix<M extends number = number, N extends number = M> {
         return result;
     }
 
-    static removeRow<M extends number, N extends number>(mat: Matrix<M, N>, i) {
-        const newMat: Matrix<number, N> = Object.create(getMatrixPrototype(mat.dimensions.m - 1, mat.dimensions.n));
-        newMat.data = mat.data.filter(x => x !== i);
-        return newMat;
-    }
-
     static identity<N extends number>(n: N): SquareMatrix<N> {
         const matrix = new SquareMatrix(n);
         setDiagonal(matrix, 1);
         return matrix;
     }
 
+    static removeRow<M extends number, N extends number>(mat: Matrix<M, N>, i) {
+        const newMat: Matrix<number, N> = Object.create(getMatrixPrototype(mat.dimensions.m - 1, mat.dimensions.n));
+        newMat.data = mat.data.splice(mat.dimensions.n * i, mat.dimensions.n);
+        return newMat;
+    }
+
     static removeColumn<M extends number, N extends number>(mat: Matrix<M, N>, j) {
         const newMat: Matrix<number, N> = Object.create(getMatrixPrototype(mat.dimensions.m, mat.dimensions.n - 1));
-        newMat.data = mat.data.map(row => {
-            const arr = [...row];
-            arr.splice(j, 1);
-            return arr;
-        });
+        newMat.data = mat.data.filter((value, index) => (index % mat.dimensions.n) === j);
+        newMat.dimensions.m--;
         return newMat;
     }
 
     set(i: number, j: number, value: number): void {
-        this.data[i][j] = value;
+        this.data[i * this.dimensions.n + j] = value;
     }
 
     get(i: number, j: number): number | undefined {
-        const row = this.data[i];
-        return row ? row[j] : undefined;
+        return this.data[i * this.dimensions.n + j];
     }
 
     equals(other: Matrix) {
@@ -196,12 +179,14 @@ export class Matrix<M extends number = number, N extends number = M> {
         this.forEach(((v, i, j) => this.set(i, j, v * scalar)));
     }
 
-    assign(matrix: Matrix<N, N>): void {
+    assign(matrix: Matrix<M, N>): void {
         this.data = matrix.data;
+        this.dimensions = matrix.dimensions;
     }
 
-    copy(matrix: Matrix<N, N>): void {
-        this.data = matrix.data.map(row => [...row])
+    copy(matrix: Matrix<M, N>): void {
+        this.data = [...matrix.data];
+        this.dimensions = {...matrix.dimensions};
     }
 
     toString(): string {
@@ -335,10 +320,11 @@ export function createMatrixView<T extends Matrix = Matrix>(matrix: Matrix, rows
 export class SquareMatrix<N extends number = number> extends Matrix<N, N> {
     constructor(n: N) {
         super(n, n);
+        this.data.fill(0);
         setDiagonal(this, 1);
     }
 
-    get size(): N { return this.data.length as N; }
+    get size(): N { return this.dimensions.n as N; }
 
     determinant(): number {
         const _this = this;
@@ -434,7 +420,7 @@ export class SquareMatrix<N extends number = number> extends Matrix<N, N> {
     }
 }
 
-export class Matrix3 extends SquareMatrix<4> {
+export class Matrix4 extends SquareMatrix<4> {
 
     constructor() {
         super(4);
@@ -447,7 +433,7 @@ export class Matrix3 extends SquareMatrix<4> {
         const z = axis.z;
         const cos = Math.cos(theta);
         const sin = Math.sin(theta);
-        this.multiply(Matrix3.fromArray([
+        this.multiply(Matrix4.fromArray([
             [cos + x ** 2 * (1 - cos), x * y * (1 - cos) - z * sin, x * z * (1 - cos) + y * sin, 0],
             [y * x * (1 - cos) + z * sin, cos + y ** 2 * (1 - cos), y * z * (1 - cos) - x * sin, 0],
             [z * x * (1 - cos) - y * sin, z * y * (1 - cos) + x * sin, cos + z ** 2 * (1 - cos), 0],
@@ -479,12 +465,12 @@ export class Matrix3 extends SquareMatrix<4> {
     }
 }
 
-export interface Matrix3 {
+export interface Matrix4 {
     translate(x: number, y: number, z: number);
 
     scale(x: number, y: number, z: number);
 
-    clone(): Matrix3;
+    clone(): Matrix4;
 }
 
 export interface SquareMatrix<N extends number> {

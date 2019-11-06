@@ -1,4 +1,4 @@
-import {Matrix, Matrix3, SquareMatrix} from "./matrix";
+import {Matrix, Matrix4, SquareMatrix} from "./matrix";
 import {Vector3} from "three";
 
 function toRadian(deg: number) {
@@ -17,12 +17,27 @@ function roundVec(vec: Vector3, digits: number = 5) {
     return vec;
 }
 
-function roundMatrix(mat: Matrix, digits: number = 5) {
-    mat.forEach((value, i, j) => mat.set(i, j, round(value, digits)));
-    return mat;
+function matrixEqual(a: Matrix, b: Matrix) {
+    expect(a.dimensions).toEqual(b.dimensions);
+    for (let i = 0; i < a.dimensions.m; i++) {
+        for (let j = 0; j < a.dimensions.n; j++) {
+            expect(a.get(i, j)).toBeCloseTo(b.get(i, j));
+        }
+    }
 }
 
 test('matrix: fromArray', () => {
+    const a = Matrix.fromArray([
+        [1, 0, 0],
+        [0, 1, 0],
+        [0, 0, 1]
+    ]);
+    const b = Matrix.identity(3);
+
+    expect(a).toEqual(b);
+});
+
+test('matrix: equals', () => {
     const a = Matrix.fromArray([
         [1, 0, 0],
         [0, 1, 0],
@@ -119,13 +134,13 @@ test('matrix: transpose', () => {
 
 test('matrix3: transform', () => {
     const vec = new Vector3(1, 1, 1);
-    const matrix = new Matrix3();
+    const matrix = new Matrix4();
     expect(matrix.transform(vec)).toEqual(new Vector3(1, 1, 1));
 });
 
 test('matrix3: translate', () => {
     const vec = new Vector3(3, 3, 2);
-    const matrix = new Matrix3();
+    const matrix = new Matrix4();
     matrix.translate(2, 1, 2);
     expect(matrix.transform(vec)).toEqual(new Vector3(5, 4, 4));
     matrix.translate(-5, 0.5, 25);
@@ -135,12 +150,12 @@ test('matrix3: translate', () => {
 test('matrix3: scale', () => {
     const vec = new Vector3(3, 3, 2);
     {
-        const matrix = new Matrix3();
+        const matrix = new Matrix4();
         matrix.scale(2, 3, 0.5);
         expect(matrix.transform(vec)).toEqual(new Vector3(6, 9, 1));
     }
     {
-        const matrix = new Matrix3();
+        const matrix = new Matrix4();
         matrix.scaleX(2);
         matrix.scaleY(2);
         matrix.scaleZ(2);
@@ -154,7 +169,7 @@ test('matrix3: scale', () => {
 test('matrix3: rotate', () => {
     {
         const vec = new Vector3(0, 1, 0);
-        const matrix = new Matrix3();
+        const matrix = new Matrix4();
         matrix.rotateX(toRadian(90));
 
         const r = matrix.transform(vec);
@@ -162,7 +177,7 @@ test('matrix3: rotate', () => {
     }
     {
         const vec = new Vector3(1, 0, 0);
-        const matrix = new Matrix3();
+        const matrix = new Matrix4();
         matrix.rotateY(toRadian(90));
 
         const r = matrix.transform(vec);
@@ -170,7 +185,7 @@ test('matrix3: rotate', () => {
     }
     {
         const vec = new Vector3(1, 0, 0);
-        const matrix = new Matrix3();
+        const matrix = new Matrix4();
         matrix.rotateZ(toRadian(90));
 
         const r = matrix.transform(vec);
@@ -197,14 +212,6 @@ test("matrix3: determinant", () => {
     expect(matrix.determinant()).toEqual(1);
 });
 
-test('square: inverse', () => {
-    const n = Math.round(3);
-    const mat = new SquareMatrix(n);
-    mat.forEach((value, i, j) => mat.set(i, j, Math.floor(Math.random() * 100)));
-
-    expect(roundMatrix(Matrix.multiply(mat, mat.inverse()))).toEqual(Matrix.identity(n));
-});
-
 test("adjugate", () => {
     const mat = Matrix.fromArray([
         [1, 2, 3],
@@ -218,7 +225,7 @@ test("adjugate", () => {
     ]));
 });
 
-test("inv", () => {
+test("matrix2: inverse", () => {
     const inv = Matrix.fromArray([
         [1, 1],
         [0, 1]
@@ -231,4 +238,12 @@ test("inv", () => {
         inv.inverse()
     );
     expect(I).toEqual(Matrix.identity(2));
+});
+
+test('square: inverse', () => {
+    const n = Math.round(3);
+    const mat = new SquareMatrix(n);
+    mat.forEach((value, i, j) => mat.set(i, j, Math.floor(Math.random() * 100)));
+
+    matrixEqual(Matrix.multiply(mat, mat.inverse()), Matrix.identity(n));
 });
