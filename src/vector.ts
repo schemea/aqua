@@ -1,5 +1,5 @@
 import {PerspectiveCamera, Quaternion, Vector3} from "three";
-import {Matrix3} from "./matrix";
+import {Matrix4} from "./matrix";
 
 
 export namespace Vector {
@@ -53,7 +53,7 @@ export namespace Vector {
     }
 
     function rotate(vector: Vector3, angle: number, axis: Vector3) {
-        const mat = new Matrix3();
+        const mat = new Matrix4();
         mat.rotate(angle, axis);
         mat.transform(vector);
         return vector;
