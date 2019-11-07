@@ -55,9 +55,7 @@ const config: Configuration = {
         ],
         plugins: [new TsConfigPathsPlugin()]
     },
-    mode: "development",
     target: "web",
-    devtool: "source-map",
     plugins: [
         new CleanWebpackPlugin(),
         new CopyPlugin([{from: "src/webgl/shaders", to: "shaders"}]),
@@ -70,5 +68,20 @@ const config: Configuration = {
         compress: true
     }
 };
+
+switch (process.env.NODE_ENV as Configuration["mode"]) {
+    case "development":
+    case "production":
+        config.mode = process.env.NODE_ENV as Configuration["mode"];
+        break;
+    case "none":
+    default:
+        config.mode = "development";
+        break;
+}
+
+if (config.mode === "development") {
+    config.devtool = "source-map";
+}
 
 export default config;

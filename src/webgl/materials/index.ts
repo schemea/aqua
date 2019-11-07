@@ -1,9 +1,9 @@
 import {Program} from "@webgl/program";
-import {Color} from "@webgl/color";
+import {Color} from "@webgl/models/color";
 import {CacheManager} from "@webgl/utils";
 import {ShaderCache} from "@webgl/shader";
-import {UniformLocation} from "@webgl/uniform";
-import {Uniform} from "@webgl/models/uniform";
+import {Uniform} from "@webgl/locations/uniform";
+import {Uniforms} from "@webgl/models/uniforms";
 
 export class Material {
     color: Color;
@@ -16,7 +16,7 @@ export class Material {
 
     use(program: Program) {
         program.use();
-        const u_color = new UniformLocation(program, Uniform.color);
+        const u_color = new Uniform(program, Uniforms.color);
         u_color.set(this.color.channels, program.context.FLOAT);
     }
 
@@ -27,8 +27,6 @@ export class MaterialProgramCache extends CacheManager<Program, (key: Material) 
     constructor(public readonly shaders: ShaderCache) {
         super((material: Material): Program => material.createProgram(shaders));
     }
-
-    // get(key: Material): Program;
 }
 
 export interface MaterialProgramCache {

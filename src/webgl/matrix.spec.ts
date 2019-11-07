@@ -1,5 +1,7 @@
+import "module-alias/register";
+
 import {Matrix, Matrix4, SquareMatrix} from "./matrix";
-import {Vector3} from "three";
+import {Vector3} from "./vector";
 
 function toRadian(deg: number) {
     return deg * Math.PI / 180;
@@ -10,9 +12,9 @@ function round(value: number, digits: number = 5) {
 }
 
 function roundVec(vec: Vector3, digits: number = 5) {
-    vec.setX(round(vec.x, digits));
-    vec.setY(round(vec.y, digits));
-    vec.setZ(round(vec.z, digits));
+    vec.x = round(vec.x, digits);
+    vec.y = round(vec.y, digits);
+    vec.z = round(vec.z, digits);
 
     return vec;
 }
@@ -164,6 +166,16 @@ test('matrix3: scale', () => {
         matrix.scaleZ(10);
         expect(matrix.transform(vec)).toEqual(new Vector3(1.5, 18, 40));
     }
+});
+
+test("matrix3: fromVector", () => {
+    const vec = new Vector3(1, 2, 3);
+    expect(Matrix.fromVector(vec)).toEqual(Matrix.fromArray([
+        [1],
+        [2],
+        [3],
+        [1]
+    ]));
 });
 
 test('matrix3: rotate', () => {

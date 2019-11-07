@@ -1,11 +1,11 @@
 import {Material} from "@webgl/materials/index";
 import {Program} from "@webgl/program";
-import {Color} from "@webgl/color";
+import {Color} from "@webgl/models/color";
 import {Shader, ShaderCache} from "@webgl/shader";
 import fragmentSource from "@shaders/fragment.glsl";
 import vertexSource from "@shaders/vertex.glsl";
 
-export class MaterialBasic extends Material {
+export class BasicMaterial extends Material {
 
     constructor(public color = new Color()) {
         super();

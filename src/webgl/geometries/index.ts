@@ -1,4 +1,4 @@
-import {VertexBuffer} from "@webgl/buffer";
+import {VertexBuffer} from "@webgl/models/buffer";
 
 export class Geometry {
     public buffer: VertexBuffer;
@@ -6,6 +6,7 @@ export class Geometry {
 
     constructor(public readonly context: WebGLRenderingContext, public readonly dimension: number) {
         this.buffer = new VertexBuffer(this.context, this.context.ARRAY_BUFFER);
+        this.mode = context.TRIANGLES;
     }
 
     get mode() { return this.buffer.mode; }

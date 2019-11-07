@@ -1,4 +1,5 @@
 import {Program} from "@webgl/program";
+import {SquareMatrix} from "@webgl/matrix";
 
 function getSuffix(context: WebGLRenderingContext, type: GLenum) {
     switch (type) {
@@ -11,7 +12,7 @@ function getSuffix(context: WebGLRenderingContext, type: GLenum) {
     }
 }
 
-export class UniformLocation {
+export class Uniform {
     public handle: WebGLUniformLocation;
 
     constructor(public readonly program: Program, name: string) {
@@ -22,6 +23,12 @@ export class UniformLocation {
         const context = this.program.context;
         const fn = `uniform${data.length}${getSuffix(context, type)}`;
         context[fn](this.handle, ...data);
+    }
+
+    setMatrix(matrix: SquareMatrix) {
+        const context = this.program.context;
+        const fn = `uniformMatrix${matrix.size}fv`;
+        context[fn](this.handle, false, new Float32Array(matrix.data));
     }
 
     get<T>(): T {

@@ -1,25 +1,53 @@
-import {Geometry} from "@webgl/geometry";
+import {Geometry} from "@webgl/geometries";
 import {Program} from "@webgl/program";
-import {VertexAttributeLocation} from "@webgl/location";
+import {VertexAttributeLocation} from "@webgl/locations/attribute";
 import {Attributes} from "@webgl/models/attributes";
 import {MaterialProgramCache} from "@webgl/materials";
 import {ShaderCache} from "@webgl/shader";
-import {Mesh} from "@webgl/mesh";
-import {Color} from "@webgl/color";
+import {Mesh} from "@webgl/models/mesh";
+import {Color} from "@webgl/models/color";
+import {Uniform} from "@webgl/locations/uniform";
+import {Uniforms} from "@webgl/models/uniforms";
 
 export class Renderer {
-    shaders = new ShaderCache(this.context);
-    programs = new MaterialProgramCache(this.shaders);
+    context: WebGLRenderingContext;
+    shaders: ShaderCache;
+    programs: MaterialProgramCache;
 
+    constructor(parent: HTMLElement);
+    constructor(canvas: HTMLCanvasElement);
+    constructor(context: WebGLRenderingContext);
+    constructor(public arg: HTMLElement | WebGLRenderingContext) {
+        if (arg instanceof HTMLCanvasElement) {
+            this.context = arg.getContext("webgl");
+        } else if (arg instanceof WebGLRenderingContext) {
+            this.context = arg;
+        } else if (arg instanceof HTMLElement) {
+            const canvas = arg.appendChild(document.createElement("canvas"));
+            this.context = canvas.getContext("webgl");
+        } else {
+            throw "invalid argument passed to Renderer constructor";
+        }
+        this.shaders = new ShaderCache(this.context);
+        this.programs = new MaterialProgramCache(this.shaders);
+    }
 
-    constructor(public context: WebGLRenderingContext) { }
+    enableDefaultFeatures() {
+        this.context.enable(this.context.BLEND);
+        this.context.blendFunc(this.context.SRC_ALPHA, this.context.ONE_MINUS_SRC_ALPHA);
+
+        this.context.enable(this.context.DEPTH_TEST);
+    }
 
     drawGeometry(geometry: Geometry, program: Program) {
         program.use();
         geometry.buffer.bind();
-        const attrib = new VertexAttributeLocation(program, Attributes.position, geometry.dimension);
-        attrib.bind();
-        attrib.enable();
+        const a_position = new VertexAttributeLocation(program, Attributes.position, geometry.dimension);
+        a_position.bind();
+        a_position.enable();
+
+        const u_resolution = new Uniform(program, Uniforms.resolution);
+        u_resolution.set([this.context.canvas.width, this.context.canvas.height], this.context.INT);
 
         this.context.drawArrays(geometry.mode, 0, geometry.vertexCount);
     }
@@ -27,6 +55,8 @@ export class Renderer {
     drawMesh(mesh: Mesh) {
         const program = this.programs.get(mesh.material);
         mesh.material.use(program);
+        const u_transform = new Uniform(program, Uniforms.transform);
+        u_transform.setMatrix(mesh.transform);
         this.drawGeometry(mesh.geometry, program);
     }
 
@@ -40,12 +70,15 @@ export class Renderer {
         this.context.clearColor(...color.channels);
     }
 
-    clear(mask: GLenum): void {
-        if (mask) {
-            this.context.clear(mask);
-        } else {
-            this.context.clear(this.context.COLOR_BUFFER_BIT);
-            this.context.clear(this.context.DEPTH_BUFFER_BIT);
-        }
+    clear(mask: GLenum = this.context.COLOR_BUFFER_BIT | this.context.DEPTH_BUFFER_BIT): void {
+        this.context.clear(mask);
+    }
+
+    setRenderLoop(fn: (timestamp: DOMHighResTimeStamp) => void) {
+        const handler = time => {
+            fn(time);
+            requestAnimationFrame(handler);
+        };
+        requestAnimationFrame(handler);
     }
 }

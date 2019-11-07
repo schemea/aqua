@@ -1,6 +1,6 @@
 import {Program} from "@webgl/program";
 
-export class AttributeLocation {
+export class Attribute {
     index: GLenum;
 
     constructor(public program: Program, name: string) {
@@ -11,7 +11,7 @@ export class AttributeLocation {
 
 }
 
-export class VertexAttributeLocation extends AttributeLocation {
+export class VertexAttributeLocation extends Attribute {
     normalized = false;
     stride = 0;
     offset = 0;

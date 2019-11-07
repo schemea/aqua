@@ -6,16 +6,15 @@ export class Color {
     constructor(rgba: number[]);
 
     constructor(...rgba: number[] | [number[]]) {
-        this.channels = new Array(4) as [number, number, number, number];
         if (typeof rgba[0] != "number") {
             rgba = rgba[0];
         }
-        if (rgba[3] === undefined) {
-            rgba[3] = 1;
-        }
-        for (let i = 0; i < this.channels.length; i++) {
-            this.channels[i] = (<number>rgba[i]) || 0;
-        }
+        this.channels = [
+            rgba[0] as number || 0,
+            rgba[1] as number || 0,
+            rgba[2] as number || 0,
+            rgba[3] as number || 1
+        ];
     }
 
     get red() { return this.channels[0]; }
