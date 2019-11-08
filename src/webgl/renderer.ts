@@ -8,15 +8,22 @@ import {Mesh} from "@webgl/models/mesh";
 import {Color} from "@webgl/models/color";
 import {Uniform} from "@webgl/locations/uniform";
 import {Uniforms} from "@webgl/models/uniforms";
+import {Camera} from "@webgl/cameras";
+import {Vector3} from "@webgl/vector";
 
 export class Renderer {
     context: WebGLRenderingContext;
     shaders: ShaderCache;
     programs: MaterialProgramCache;
+    // camera: PerspectiveCamera;
+    camera: Camera;
 
     constructor(parent: HTMLElement);
+
     constructor(canvas: HTMLCanvasElement);
+
     constructor(context: WebGLRenderingContext);
+
     constructor(public arg: HTMLElement | WebGLRenderingContext) {
         if (arg instanceof HTMLCanvasElement) {
             this.context = arg.getContext("webgl");
@@ -30,7 +37,21 @@ export class Renderer {
         }
         this.shaders = new ShaderCache(this.context);
         this.programs = new MaterialProgramCache(this.shaders);
+        // this.camera = new PerspectiveCamera(90, this.canvas.clientWidth / this.canvas.clientHeight, 0.01, 1000);
+        this.camera = new Camera();
+        this.camera.position.x = 0.5;
+        this.camera.updateTransformMatrix();
+        this.camera.updateViewMatrix();
+        this.camera.updateWorldMatrix();
+        (<any>window).identity = this.camera.transform.multiply(this.camera.world);
+        (<any>window).origin = this.camera.world.transform(this.camera.position);
+        (<any>window).world = this.camera.world;
+        (<any>window).transform = this.camera.transform;
+        (<any>window).Vector3 = Vector3;
+
     }
+
+    get canvas(): HTMLCanvasElement { return this.context.canvas as HTMLCanvasElement; }
 
     enableDefaultFeatures() {
         this.context.enable(this.context.BLEND);
@@ -47,7 +68,11 @@ export class Renderer {
         a_position.enable();
 
         const u_resolution = new Uniform(program, Uniforms.resolution);
-        u_resolution.set([this.context.canvas.width, this.context.canvas.height], this.context.INT);
+        u_resolution.set([this.canvas.clientWidth, this.canvas.clientHeight], this.context.INT);
+
+        const u_world = new Uniform(program, Uniforms.world);
+        // u_world.setMatrix(Matrix.identity(4));
+        u_world.setMatrix(this.camera.world);
 
         this.context.drawArrays(geometry.mode, 0, geometry.vertexCount);
     }

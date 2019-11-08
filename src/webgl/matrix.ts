@@ -75,7 +75,9 @@ export class Matrix<M extends number = number, N extends number = M> {
         return matrix;
     }
 
-    static fromArray<M extends number = number, N extends number = number>(data: number[][]): AutoMatrix<M, N> {
+    static fromArray<M extends number = number, N extends number = number>(data: number[][]): AutoMatrix<M, N>;
+    static fromArray(data: number[][]): Matrix;
+    static fromArray<M extends number = number, N extends number = number>(data: number[][]): any {
         const matrix = Matrix.create(data.length as M, data[0].length as N) as AutoMatrix<M, N>;
         for (let i = 0; i < data.length; ++i) {
             for (let j = 0; j < data[0].length; ++j) {
@@ -136,13 +138,15 @@ export class Matrix<M extends number = number, N extends number = M> {
         return result;
     }
 
-    static identity<N extends number>(n: N): SquareMatrix<N> {
+    static identity(n: 4): Matrix4;
+    static identity<N extends number>(n: N): SquareMatrix<N>;
+    static identity(n: number) {
         const matrix = Matrix.create(n, n);
         for (let i = 0; i < matrix.data.length; i++) {
             matrix.data[i] = 0;
         }
         setDiagonal(matrix, 1);
-        return (<SquareMatrix<N>>matrix);
+        return matrix;
     }
 
     static removeRow<M extends number, N extends number>(mat: Matrix<M, N>, i) {
@@ -192,16 +196,13 @@ export class Matrix<M extends number = number, N extends number = M> {
     }
 
     toString(): string {
-        let cRow = 0;
-        let str = "";
-        this.forEach((value, i, j) => {
-            if (i !== cRow) {
-                cRow = i;
-                str += "\n";
-            }
-            str += value.toString().padStart(3, ' ');
-        });
-        return str;
+        let data = this.data.map(val => val.toString());
+        const max = data.reduce((prev, curr) => Math.max(prev, curr.length), 0);
+        data = data.map(value => value.padStart(max + 1));
+        for (let i = 0; i < this.dimensions.m; i++) {
+            data[this.dimensions.n * (i + 1) - 1] += "\n";
+        }
+        return data.join(" ");
     }
 
     clone(): Matrix<M, N> {
@@ -372,8 +373,6 @@ export class SquareMatrix<N extends number = number> extends Matrix<N, N> {
 
         function computeCell(i, j): number {
             const det = createMatrixView<SquareMatrix>(_this, exclude(i), exclude(j)).determinant();
-            if (i === 1 && j === 0)
-                debugger;
             return (-1) ** (i + j) * det;
         }
 
@@ -394,7 +393,7 @@ export class SquareMatrix<N extends number = number> extends Matrix<N, N> {
         return Matrix.transpose(adj) as SquareMatrix<N>;
     }
 
-    scale(...values: number[]) {
+    scale(...values: number[]): SquareMatrix<N> {
         const n = this.size;
         const m = new SquareMatrix(n);
 
@@ -402,10 +401,10 @@ export class SquareMatrix<N extends number = number> extends Matrix<N, N> {
             m.set(i, i, values[i])
         }
 
-        this.multiply(m);
+        return m.multiply(this);
     }
 
-    translate(...values: number[] | [number[]]): void {
+    translate(...values: number[] | [number[]]): SquareMatrix<N> {
         const n = this.size;
         const m = new SquareMatrix(n);
 
@@ -413,16 +412,16 @@ export class SquareMatrix<N extends number = number> extends Matrix<N, N> {
             values = values[0];
         }
 
-        for (let i = 0; i < Math.min(values.length, n - 1); ++i) {
-            m.set(i, n - 1, <number>values[i])
+        for (let j = 0; j < Math.min(values.length, n - 1); ++j) {
+            m.set(j, n - 1, <number>values[j])
         }
 
-        this.multiply(m);
+        return m.multiply(this);
     }
 
-    multiply(matrix: Matrix<N, N>) {
+    multiply(matrix: SquareMatrix<N>): SquareMatrix<N> {
         const r = SquareMatrix.multiply(this, matrix);
-        this.assign(r);
+        return r as SquareMatrix<N>;
     }
 }
 
@@ -432,38 +431,45 @@ export class Matrix4 extends SquareMatrix<4> {
         super(4);
     }
 
-    rotate(theta: number, axis: Vector3) {
+    rotate(theta: number, axis: Vector3): Matrix4 {
         axis = axis.normalized();
         const x = axis.x;
         const y = axis.y;
         const z = axis.z;
         const cos = Math.cos(theta);
         const sin = Math.sin(theta);
-        this.multiply(Matrix4.fromArray([
+        return Matrix4.fromArray([
             [cos + x ** 2 * (1 - cos), x * y * (1 - cos) - z * sin, x * z * (1 - cos) + y * sin, 0],
             [y * x * (1 - cos) + z * sin, cos + y ** 2 * (1 - cos), y * z * (1 - cos) - x * sin, 0],
             [z * x * (1 - cos) - y * sin, z * y * (1 - cos) + x * sin, cos + z ** 2 * (1 - cos), 0],
             [0, 0, 0, 1]
-        ]));
+        ]).multiply(this);
     }
 
-    rotateX(theta: number) { this.rotate(theta, new Vector3(1, 0, 0)); }
+    rotateX(theta: number): Matrix4 { return this.rotate(theta, new Vector3(1, 0, 0)); }
 
-    rotateY(theta: number) { this.rotate(theta, new Vector3(0, 1, 0)); }
+    rotateY(theta: number): Matrix4 { return this.rotate(theta, new Vector3(0, 1, 0)); }
 
-    rotateZ(theta: number) { this.rotate(theta, new Vector3(0, 0, 1)); }
+    rotateZ(theta: number): Matrix4 { return this.rotate(theta, new Vector3(0, 0, 1)); }
 
-    translateX(x: number): void { this.translate(x, 0, 0); }
+    translate(...values): SquareMatrix<4> {
+        if (values[0] instanceof Vector3)
+            return super.translate(values[0].coordinates);
+        else
+            return super.translate(...values);
+    }
 
-    translateY(y: number): void { this.translate(0, y, 0); }
+    translateX(x: number): Matrix4 { return this.translate(x, 0, 0); }
 
-    translateZ(z: number): void { this.translate(0, 0, z); }
+    translateY(y: number): Matrix4 { return this.translate(0, y, 0); }
 
-    scaleX(x: number): void { this.scale(x, 1, 1); }
+    translateZ(z: number): Matrix4 { return this.translate(0, 0, z); }
 
-    scaleY(y: number): void { this.scale(1, y, 1); }
+    scaleX(x: number): Matrix4 { return this.scale(x, 1, 1); }
 
-    scaleZ(z: number): void { this.scale(1, 1, z); }
+    scaleY(y: number): Matrix4 { return this.scale(1, y, 1); }
+
+    scaleZ(z: number): Matrix4 { return this.scale(1, 1, z); }
 
     transform(vec: Vector3) {
         const r = Matrix.multiply(this, Matrix.fromVector(vec, 1));
@@ -471,12 +477,22 @@ export class Matrix4 extends SquareMatrix<4> {
     }
 }
 
+export declare namespace Matrix4 {
+    export function fromArray(data: number[][]): Matrix4;
+}
+
 export interface Matrix4 {
-    translate(x: number, y: number, z: number): void;
+    multiply(matrix: Matrix4): Matrix4;
 
-    translate(coordinates: [number, number, number]): void;
+    translate(x: number, y: number, z: number): Matrix4;
 
-    scale(x: number, y: number, z: number): void;
+    translate(coordinates: [number, number, number]): Matrix4;
+
+    translate(vec: Vector3): Matrix4;
+
+    scale(x: number, y: number, z: number): Matrix4;
+
+    inverse(): Matrix4;
 
     clone(): Matrix4;
 }

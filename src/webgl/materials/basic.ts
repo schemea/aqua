@@ -11,6 +11,13 @@ export class BasicMaterial extends Material {
         super();
     }
 
+    createShader(context: WebGLRenderingContext): Shader {
+        const shader = new Shader(context, context.FRAGMENT_SHADER);
+        shader.source = fragmentSource;
+        shader.compile();
+        return shader;
+    }
+
     createProgram(shaders: ShaderCache): Program {
         const program = new Program(shaders.context);
         // const fragment = shaders.get("fragment", shaders.context.FRAGMENT_SHADER);

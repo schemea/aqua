@@ -1,7 +1,7 @@
 import {Program} from "@webgl/program";
 import {Color} from "@webgl/models/color";
 import {CacheManager} from "@webgl/utils";
-import {ShaderCache} from "@webgl/shader";
+import {Shader, ShaderCache} from "@webgl/shader";
 import {Uniform} from "@webgl/locations/uniform";
 import {Uniforms} from "@webgl/models/uniforms";
 
@@ -13,6 +13,8 @@ export class Material {
     createProgram(shader: ShaderCache): Program {
         throw "createProgram() has not been implemented by " + this.type;
     }
+
+    createShader(context: WebGLRenderingContext): Shader { throw "not implemented"; }
 
     use(program: Program) {
         program.use();

@@ -31,7 +31,8 @@
   "scripts": {
     "build": "webpack",
     "debug": "webpack-dev-server --open",
-    "start": "webpack-dev-server --open"
+    "start": "webpack-dev-server --open",
+    "test": "jest"
   },
   "author": "",
   "license": "ISC",
