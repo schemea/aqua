@@ -38,6 +38,7 @@ renderer.camera = new PerspectiveCamera(90, innerWidth / innerHeight, 0.0001, 10
 renderer.setRenderLoop(timestamp => {
     renderer.clear();
     renderer.camera.position.z = 2 + Math.cos(timestamp * 0.0005);
+    renderer.camera.rotate.x = Math.sin(timestamp * 0.0025) * 10;
     renderer.camera.updateTransformMatrix();
     renderer.camera.updateWorldMatrix();
     mesh.position.x = Math.cos(timestamp * 0.0015) * 0.5;
