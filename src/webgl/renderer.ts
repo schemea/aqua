@@ -39,10 +39,9 @@ export class Renderer {
         this.programs = new MaterialProgramCache(this.shaders);
         // this.camera = new PerspectiveCamera(90, this.canvas.clientWidth / this.canvas.clientHeight, 0.01, 1000);
         this.camera = new Camera();
-        this.camera.position.x = 0.5;
-        this.camera.updateTransformMatrix();
-        this.camera.updateViewMatrix();
-        this.camera.updateWorldMatrix();
+        // this.camera.position.x = 0.5;
+        // this.camera.updateTransformMatrix();
+        // this.camera.updateWorldMatrix();
         (<any>window).identity = this.camera.transform.multiply(this.camera.world);
         (<any>window).origin = this.camera.world.transform(this.camera.position);
         (<any>window).world = this.camera.world;

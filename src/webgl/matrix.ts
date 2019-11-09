@@ -98,6 +98,8 @@ export class Matrix<M extends number = number, N extends number = M> {
         return r;
     }
 
+    static transpose<T extends SquareMatrix>(matrix: T): T;
+    static transpose<M extends number, N extends number>(matrix: Matrix<M, N>);
     static transpose<M extends number, N extends number>(matrix: Matrix<M, N>) {
         const m = matrix.dimensions.m;
         const n = matrix.dimensions.n;
@@ -413,7 +415,7 @@ export class SquareMatrix<N extends number = number> extends Matrix<N, N> {
         }
 
         for (let j = 0; j < Math.min(values.length, n - 1); ++j) {
-            m.set(j, n - 1, <number>values[j])
+            m.set(n - 1, j, <number>values[j])
         }
 
         return m.multiply(this);
@@ -438,12 +440,12 @@ export class Matrix4 extends SquareMatrix<4> {
         const z = axis.z;
         const cos = Math.cos(theta);
         const sin = Math.sin(theta);
-        return Matrix4.fromArray([
+        return (Matrix4.fromArray([
             [cos + x ** 2 * (1 - cos), x * y * (1 - cos) - z * sin, x * z * (1 - cos) + y * sin, 0],
             [y * x * (1 - cos) + z * sin, cos + y ** 2 * (1 - cos), y * z * (1 - cos) - x * sin, 0],
             [z * x * (1 - cos) - y * sin, z * y * (1 - cos) + x * sin, cos + z ** 2 * (1 - cos), 0],
             [0, 0, 0, 1]
-        ]).multiply(this);
+        ])).multiply(this);
     }
 
     rotateX(theta: number): Matrix4 { return this.rotate(theta, new Vector3(1, 0, 0)); }

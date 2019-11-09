@@ -9,12 +9,12 @@ export class WebGLElement {
 
     updateTransformMatrix(): void {
         this.transform = Matrix.identity(4);
+        // this.transform.set(2, 3, 0.5);
+        this.transform = this.transform.translate(this.position.coordinates);
         this.rotate.coordinates.forEach((value, index) => {
             const axis = new Vector3();
             axis.coordinates[index] = 1;
             this.transform = this.transform.rotate(value * Math.PI / 180, axis);
         });
-        // this.transform.set(2, 3, 0.5);
-        this.transform = this.transform.translate(this.position.coordinates);
     }
 }

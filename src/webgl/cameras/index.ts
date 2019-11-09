@@ -9,15 +9,18 @@ export class Camera extends WebGLElement {
     constructor() {
         super();
 
-        this.updateTransformMatrix();
-        this.updateViewMatrix();
-        this.updateProjectionMatrix();
-        this.updateWorldMatrix();
+        this.view = Matrix4.identity(4);
+        this.world = Matrix4.identity(4);
+        this.transform = Matrix4.identity(4);
+        this.projection = Matrix4.identity(4);
+    }
+
+    updateTransformMatrix(): void {
+        super.updateTransformMatrix();
+        this.view = this.transform.inverse();
     }
 
     updateProjectionMatrix(): void { this.projection = Matrix4.identity(4); }
 
-    updateViewMatrix(): void { this.view = this.transform.inverse(); }
-
-    updateWorldMatrix(): void { this.world = this.projection.multiply(this.view); }
+    updateWorldMatrix(): void { this.world = this.view.multiply(this.projection); }
 }
