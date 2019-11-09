@@ -33,14 +33,13 @@ renderer.clearColor(Color.BLACK);
 renderer.clear();
 const material = new BasicMaterial(new Color(0.1, 0.1, 0.5, 0.15));
 const mesh = new Mesh(new BoxGeometry(context, 0.5, 0.5, 0.5), material);
-// mesh.position.x = 0.5;
 
 renderer.camera = new PerspectiveCamera(90, innerWidth / innerHeight, 0.0001, 1000);
-renderer.camera.position.z = 1;
-renderer.camera.updateTransformMatrix();
-renderer.camera.updateWorldMatrix();
 renderer.setRenderLoop(timestamp => {
     renderer.clear();
+    renderer.camera.position.z = 2 + Math.cos(timestamp * 0.0005);
+    renderer.camera.updateTransformMatrix();
+    renderer.camera.updateWorldMatrix();
     mesh.position.x = Math.cos(timestamp * 0.0015) * 0.5;
     mesh.position.y = Math.sin(timestamp * 0.0015) * 0.5;
     mesh.rotate.x += 1;
