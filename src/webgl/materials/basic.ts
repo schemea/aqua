@@ -1,7 +1,7 @@
 import {Material} from "@webgl/materials/index";
 import {Program} from "@webgl/program";
 import {Color} from "@webgl/models/color";
-import {Shader, ShaderCache} from "@webgl/shader";
+import {MaterialShaderCache, Shader} from "@webgl/shader";
 import fragmentSource from "@shaders/fragment.glsl";
 import vertexSource from "@shaders/vertex.glsl";
 
@@ -18,7 +18,7 @@ export class BasicMaterial extends Material {
         return shader;
     }
 
-    createProgram(shaders: ShaderCache): Program {
+    createProgram(shaders: MaterialShaderCache): Program {
         const program = new Program(shaders.context);
         // const fragment = shaders.get("fragment", shaders.context.FRAGMENT_SHADER);
         // const vertex = shaders.get("vertex", shaders.context.VERTEX_SHADER);

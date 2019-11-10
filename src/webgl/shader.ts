@@ -1,4 +1,5 @@
 import {CacheManager} from "@webgl/utils";
+import {Material} from "@webgl/materials";
 
 export class Shader {
     handle: WebGLShader;
@@ -38,18 +39,18 @@ export class Shader {
     release(): void { this.context.deleteShader(this.handle); }
 }
 
-export class ShaderCache extends CacheManager<Shader, (name: string, type: GLenum) => Shader> {
+export class MaterialShaderCache extends CacheManager<Shader, (name: Material) => Shader> {
     constructor(public readonly context: WebGLRenderingContext) {
-        super((name: string, type: GLenum) => {
-            if (!type)
-                console.error("shader type is undefined");
-            return Shader.load(context, name, type);
+        super((material: Material) => {
+            return material.createShader(context);
         });
+    }
+
+    extractKey(material: Material): string {
+        return material.type;
     }
 }
 
-export interface ShaderCache {
-    get(name: string, type: GLenum);
-
-    get(name: string);
+export interface MaterialShaderCache {
+    get(material: Material);
 }

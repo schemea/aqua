@@ -209,17 +209,18 @@ export class Matrix<M extends number = number, N extends number = M> {
     }
 }
 
+const matricesViews = new Map();
+
 export function createMatrixView<T extends Matrix = Matrix>(matrix: Matrix, rows: number[] = [], cols: number[] = []): T {
     const matrixPrototype = getMatrixPrototype(rows.length, cols.length);
+    let constructor = matricesViews.get(matrixPrototype);
 
-    const name = matrixPrototype.constructor.name + "View";
-
-    let constructor = module.exports[name];
     let prototype;
 
     if (constructor) {
         prototype = constructor.prototype;
     } else {
+        const name = matrixPrototype.constructor.name + "View";
         prototype = Object.create(matrixPrototype, {
             copy: {
                 value() {
@@ -288,7 +289,9 @@ export function createMatrixView<T extends Matrix = Matrix>(matrix: Matrix, rows
             });
         }
 
-        module.exports[name] = constructor = new Function(`return function ${name}(...args){ return createMatrixView(...args)}`)();
+        constructor = new Function(`return function ${name}(...args){ return createMatrixView(...args)}`)();
+        matricesViews.set(matrixPrototype, constructor);
+
         constructor.prototype = prototype;
         prototype.constructor = constructor;
     }
@@ -421,7 +424,7 @@ export class SquareMatrix<N extends number = number> extends Matrix<N, N> {
     translate(...values: [number[]]): SquareMatrix<N>;
     translate(...values: any): SquareMatrix<N> {
         const n = this.size;
-        const m = new SquareMatrix(n);
+        const m = Matrix.identity(n);
 
         if (typeof values[0] === "object") {
             values = values[0];
@@ -518,13 +521,13 @@ export class Matrix4 extends SquareMatrix<4> {
 export interface Matrix4 {
     multiply(matrix: Matrix4): Matrix4;
 
-    translate(x: number, y: number, z: number): Matrix4;
+    translate(x: number, y?: number, z?: number): Matrix4;
 
-    translate(coordinates: [number, number, number]): Matrix4;
+    translate(coordinates: number[]): Matrix4;
 
     translate(vec: Vector3): Matrix4;
 
-    scale(x: number, y: number, z: number): Matrix4;
+    scale(x: number, y?: number, z?: number): Matrix4;
 
     inverse(): Matrix4;
 

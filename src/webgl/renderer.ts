@@ -3,16 +3,28 @@ import {Program} from "@webgl/program";
 import {VertexAttributeLocation} from "@webgl/locations/attribute";
 import {Attributes} from "@webgl/models/attributes";
 import {MaterialProgramCache} from "@webgl/materials";
-import {ShaderCache} from "@webgl/shader";
+import {MaterialShaderCache} from "@webgl/shader";
 import {Mesh} from "@webgl/models/mesh";
 import {Color} from "@webgl/models/color";
 import {Uniform} from "@webgl/locations/uniform";
 import {Uniforms} from "@webgl/models/uniforms";
 import {Camera} from "@webgl/cameras";
+import {Scene} from "@webgl/scene";
+
+function setGlobalUniforms(renderer: Renderer, program: Program) {
+    const u_resolution = new Uniform(program, Uniforms.resolution);
+    u_resolution.set([renderer.canvas.clientWidth, renderer.canvas.clientHeight], renderer.context.INT);
+
+    const u_ambient = new Uniform(program, Uniforms.ambient);
+    u_ambient.set([1, 1, 1], renderer.context.FLOAT);
+
+    const u_world = new Uniform(program, Uniforms.world);
+    u_world.setMatrix(renderer.camera.world);
+}
 
 export class Renderer {
     context: WebGLRenderingContext;
-    shaders: ShaderCache;
+    shaders: MaterialShaderCache;
     programs: MaterialProgramCache;
     camera: Camera;
 
@@ -24,16 +36,16 @@ export class Renderer {
 
     constructor(public arg: HTMLElement | WebGLRenderingContext) {
         if (arg instanceof HTMLCanvasElement) {
-            this.context = arg.getContext("webgl");
+            this.context = arg.getContext("webgl", {alpha: false});
         } else if (arg instanceof WebGLRenderingContext) {
             this.context = arg;
         } else if (arg instanceof HTMLElement) {
             const canvas = arg.appendChild(document.createElement("canvas"));
-            this.context = canvas.getContext("webgl");
+            this.context = canvas.getContext("webgl", {alpha: false});
         } else {
             throw "invalid argument passed to Renderer constructor";
         }
-        this.shaders = new ShaderCache(this.context);
+        this.shaders = new MaterialShaderCache(this.context);
         this.programs = new MaterialProgramCache(this.shaders);
         this.camera = new Camera();
     }
@@ -50,25 +62,47 @@ export class Renderer {
     drawGeometry(geometry: Geometry, program: Program) {
         program.use();
         geometry.buffer.bind();
+
+        setGlobalUniforms(this, program);
+
         const a_position = new VertexAttributeLocation(program, Attributes.position, geometry.dimension);
         a_position.bind();
+
         a_position.enable();
-
-        const u_resolution = new Uniform(program, Uniforms.resolution);
-        u_resolution.set([this.canvas.clientWidth, this.canvas.clientHeight], this.context.INT);
-
-        const u_world = new Uniform(program, Uniforms.world);
-        u_world.setMatrix(this.camera.world);
 
         this.context.drawArrays(geometry.mode, 0, geometry.vertexCount);
     }
 
     drawMesh(mesh: Mesh) {
         const program = this.programs.get(mesh.material);
-        mesh.material.use(program);
+        mesh.material.apply(program);
         const u_transform = new Uniform(program, Uniforms.transform);
         u_transform.setMatrix(mesh.transform);
         this.drawGeometry(mesh.geometry, program);
+    }
+
+    drawScene(scene: Scene): void {
+        scene.meshes.forEach((meshes, program) => {
+            program.use();
+
+            setGlobalUniforms(this, program);
+
+            meshes.forEach(mesh => {
+                mesh.material.apply(program);
+
+                const u_transform = new Uniform(program, Uniforms.transform);
+                u_transform.setMatrix(mesh.transform);
+
+                const geometry = mesh.geometry;
+                geometry.buffer.bind();
+
+                const a_position = new VertexAttributeLocation(program, Attributes.position, geometry.dimension);
+                a_position.bind();
+                a_position.enable();
+
+                this.context.drawArrays(geometry.mode, 0, geometry.vertexCount);
+            })
+        })
     }
 
     resize(width: number, height: number) {
