@@ -28,10 +28,9 @@ function getMatrixPrototype<M extends number, N extends number>(m: M, n: N): Aut
         return SquareMatrix.prototype as AutoMatrix<M, N>;
 }
 
-function vectorFromMatrix<T extends Vector, N extends number>(constructor: { new(...args: number[]): any }, matrix: Matrix<1, N>): T {
-    const vec = Vector.create(matrix.dimensions.n - 1);
-    for (let i = 0; i < vec.dimension; ++i)
-        vec.coordinates[i] = matrix.get(0, i);
+function vectorFromMatrix<T extends Vector, N extends number>(constructor: { new(...args: number[]): any }, matrix: Matrix<N, 1>): T {
+    const vec = Vector.create(matrix.dimensions.m - 1);
+    vec.coordinates = Matrix.transpose(matrix).data.slice(0, vec.dimension);
     return vec as T;
 }
 
@@ -55,23 +54,10 @@ export class Matrix<M extends number = number, N extends number = M> {
         return mat as T;
     }
 
-    static fromVector<N extends number = number>(vector: Vector3 | Vector2, pad = 1): Matrix<1, N> {
-        let d = 0;
-        if ("z" in vector)
-            d = 3;
-        else if (vector instanceof Vector2)
-            d = 2;
-        const matrix = Matrix.create(1, d + pad) as Matrix<1, N>;
-        matrix.set(0, 0, vector.x);
-        matrix.set(0, 1, vector.y);
-
-        if ("z" in vector)
-            matrix.set(0, 2, vector.z);
-
-        for (let i = d; i < d + pad; ++i)
-            matrix.set(0, i, 1);
-
-        return matrix;
+    static fromVector(vector: Vector2): Matrix<3, 1>;
+    static fromVector(vector: Vector3): Matrix<4, 1>;
+    static fromVector(vector: Vector3 | Vector2): Matrix {
+        return Matrix.transpose(Matrix.fromArray([[...vector.coordinates, 1]]));
     }
 
     static fromArray<M extends number = number, N extends number = number>(data: number[][]): AutoMatrix<M, N>;
@@ -431,7 +417,9 @@ export class SquareMatrix<N extends number = number> extends Matrix<N, N> {
         return m.multiply(this);
     }
 
-    translate(...values: number[] | [number[]]): SquareMatrix<N> {
+    translate(...values: number[]): SquareMatrix<N>;
+    translate(...values: [number[]]): SquareMatrix<N>;
+    translate(...values: any): SquareMatrix<N> {
         const n = this.size;
         const m = new SquareMatrix(n);
 
@@ -439,11 +427,11 @@ export class SquareMatrix<N extends number = number> extends Matrix<N, N> {
             values = values[0];
         }
 
-        for (let j = 0; j < Math.min(values.length, n - 1); ++j) {
-            m.set(n - 1, j, <number>values[j])
+        for (let i = 0; i < Math.min(values.length, n - 1); ++i) {
+            m.set(i, n - 1, values[i])
         }
 
-        return m.multiply(this);
+        return this.multiply(m);
     }
 
     multiply(matrix: SquareMatrix<N>): SquareMatrix<N> {
@@ -488,12 +476,12 @@ export class Matrix4 extends SquareMatrix<4> {
         const z = axis.z;
         const cos = Math.cos(theta);
         const sin = Math.sin(theta);
-        return Matrix.transpose(Matrix4.fromArray([
+        return this.multiply(Matrix4.fromArray([
             [cos + x ** 2 * (1 - cos), x * y * (1 - cos) - z * sin, x * z * (1 - cos) + y * sin, 0],
             [y * x * (1 - cos) + z * sin, cos + y ** 2 * (1 - cos), y * z * (1 - cos) - x * sin, 0],
             [z * x * (1 - cos) - y * sin, z * y * (1 - cos) + x * sin, cos + z ** 2 * (1 - cos), 0],
             [0, 0, 0, 1]
-        ])).multiply(this);
+        ]));
     }
 
     rotateX(theta: number): Matrix4 { return this.rotate(theta, new Vector3(1, 0, 0)); }
@@ -522,7 +510,7 @@ export class Matrix4 extends SquareMatrix<4> {
     scaleZ(z: number): Matrix4 { return this.scale(1, 1, z); }
 
     transform(vec: Vector3): Vector3 {
-        const r = Matrix.multiply(Matrix.fromVector(vec), this);
+        const r = Matrix.multiply(this, Matrix.fromVector(vec));
         return vectorFromMatrix(Vector3, r);
     }
 }

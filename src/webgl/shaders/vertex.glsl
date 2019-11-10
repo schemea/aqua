@@ -5,6 +5,7 @@ uniform vec4 u_color;
 varying vec4 v_color;
 
 void main() {
-    gl_Position = u_world * u_transform * a_position;
+    //    gl_Position = u_world * u_transform * a_position;
+    gl_Position = a_position * u_transform * u_world;
     v_color = u_color;
 }

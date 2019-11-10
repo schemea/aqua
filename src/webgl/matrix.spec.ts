@@ -174,7 +174,7 @@ test('matrix3: scale', () => {
 
 test("matrix3: fromVector", () => {
     const vec = new Vector3(1, 2, 3);
-    expect(Matrix.fromVector(vec)).toEqual(Matrix.fromArray([[1, 2, 3, 1]]));
+    expect(Matrix.fromVector(vec)).toEqual(Matrix.transpose(Matrix.fromArray([[1, 2, 3, 1]])));
 });
 
 test('matrix3: rotate', () => {

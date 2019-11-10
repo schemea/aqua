@@ -17,8 +17,8 @@ export class PerspectiveCamera extends Camera {
         this.projection = Matrix4.fromArray([
             f / this.aspect, 0, 0, 0,
             0, f, 0, 0,
-            0, 0, (this.near + this.far) * rInv, -1,
-            0, 0, this.near * this.far * rInv * 2, 0
+            0, 0, (this.near + this.far) * rInv, this.near * this.far * rInv * 2,
+            0, 0, -1, 0
         ]);
     }
 }

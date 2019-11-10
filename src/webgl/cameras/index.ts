@@ -22,5 +22,5 @@ export class Camera extends WebGLElement {
 
     updateProjectionMatrix(): void { this.projection = Matrix4.identity(4); }
 
-    updateWorldMatrix(): void { this.world = this.view.multiply(this.projection); }
+    updateWorldMatrix(): void { this.world = this.projection.multiply(this.view); }
 }
