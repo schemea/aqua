@@ -522,13 +522,6 @@ export class Matrix4 extends SquareMatrix<4> {
     scaleZ(z: number): Matrix4 { return this.scale(1, 1, z); }
 
     transform(vec: Vector3): Vector3 {
-        // const transformed = new Vector3();
-        // for (let i = 0; i < vec.coordinates.length; i++) {
-        //     for (let j = 0; j < this.dimensions.n; j++) {
-        //         transformed.coordinates[i] += (vec.coordinates[j] || 1) * this.get(j, i);
-        //     }
-        // }
-        // return transformed;
         const r = Matrix.multiply(Matrix.fromVector(vec), this);
         return vectorFromMatrix(Vector3, r);
     }
