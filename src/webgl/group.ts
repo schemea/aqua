@@ -25,18 +25,29 @@ function add<K, V>(map: Map<K, V[]>, key: K, value: V) {
     }
 }
 
-export class Scene extends WebGLElement {
+export class Group extends WebGLElement {
     meshes = new Map<Program, Mesh[]>();
+    groups = [] as Group[];
+    readonly context: WebGLRenderingContext;
 
-    readonly shaders = {
-        materials: new MaterialShaderCache(this.context),
-        vertices: new CacheManager<Shader>(createVertexShader.bind(null, this.context))
-    };
+    readonly shaders: { materials: MaterialShaderCache; vertices: CacheManager<Shader, (name: string) => Shader> };
+    readonly programs: ProgramCache;
 
-    readonly programs = new ProgramCache(this.context);
-
-    constructor(public readonly context: WebGLRenderingContext) {
+    constructor(parent: Group);
+    constructor(context: WebGLRenderingContext);
+    constructor(arg: WebGLRenderingContext | Group) {
         super();
+        if (arg instanceof Group) {
+            this.context = arg.context;
+            this.shaders = arg.shaders;
+        } else {
+            this.context = arg;
+            this.shaders = {
+                materials: new MaterialShaderCache(this.context),
+                vertices: new CacheManager<Shader>(createVertexShader.bind(null, this.context))
+            };
+        }
+        this.programs = new ProgramCache(this.context);
     }
 
     addMesh(mesh: Mesh) {
@@ -46,6 +57,10 @@ export class Scene extends WebGLElement {
         const program = this.programs.get(vertex, fragment);
 
         add(this.meshes, program, mesh);
+    }
+
+    addGroup(group: Group) {
+        this.groups.push(group);
     }
 
     updatePrograms(): void {
@@ -59,5 +74,7 @@ export class Scene extends WebGLElement {
             });
         });
         this.meshes = map;
+
+        this.groups.forEach(group => group.updatePrograms());
     }
 }

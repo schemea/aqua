@@ -9,13 +9,19 @@ export class PlaneGeometry extends Geometry {
     private updateBuffer() {
         const dx = this.width / 2;
         const dy = this.height / 2;
-        this.vertices([
+        this.setVertices([
             -dx, dy,
             dx, dy,
             -dx, -dy,
+
             -dx, -dy,
             dx, -dy,
             dx, dy,
+        ]);
+
+        this.setNormals([
+            0, 0, 1,
+            0, 0, 1
         ]);
     }
 }

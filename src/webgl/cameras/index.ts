@@ -1,17 +1,17 @@
-import {Matrix4} from "@webgl/matrix";
+import {Matrix, Matrix4} from "@webgl/matrix";
 import {WebGLElement} from "@webgl/element";
-import {Vector3} from "@webgl/vector";
+import {Vector2, Vector3} from "@webgl/vector";
 
 export class Camera extends WebGLElement {
     projection: Matrix4;
     view: Matrix4;
-    world: Matrix4;
+    viewProjection: Matrix4;
 
     constructor() {
         super();
 
         this.view = Matrix4.identity(4);
-        this.world = Matrix4.identity(4);
+        this.viewProjection = Matrix4.identity(4);
         this.transform = Matrix4.identity(4);
         this.projection = Matrix4.identity(4);
     }
@@ -33,5 +33,20 @@ export class Camera extends WebGLElement {
 
     updateProjectionMatrix(): void { this.projection = Matrix4.identity(4); }
 
-    updateWorldMatrix(): void { this.world = this.projection.multiply(this.view); }
+    updateViewProjectionMatrix(): void { this.viewProjection = this.projection.multiply(this.view); }
+
+    unproject(vector: Vector2): Vector3 {
+        const viewProjection = this.view.multiply(this.projection);
+        let mat = Matrix.create(4, 1);
+        mat.data = [...vector.coordinates, 1, 1];
+        mat = Matrix.multiply(this.viewProjection.inverse(), mat);
+        // mat = Matrix.transpose(mat);
+
+        console.log("mat", mat);
+        const vec = new Vector3();
+        console.log("z", this.position.z);
+        const w = 1 / mat.data[3];
+        vec.coordinates = <[number, number, number]>mat.data.slice(0, vec.dimension).map(value => value);
+        return vec;
+    }
 }

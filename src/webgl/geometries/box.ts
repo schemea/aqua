@@ -1,4 +1,4 @@
-import {Geometry} from "@webgl/geometries/index";
+import {computeNormals, Geometry} from "@webgl/geometries/index";
 import {Vector, Vector3} from "@webgl/vector";
 
 export function pushQuad(vertices: number[], position: Vector3, dx: Vector3, dy: Vector3) {
@@ -6,12 +6,11 @@ export function pushQuad(vertices: number[], position: Vector3, dx: Vector3, dy:
         ...Vector.add(position, dx.negated(), dy).coordinates,
         ...Vector.add(position, dx, dy).coordinates,
         ...Vector.add(position, dx.negated(), dy.negated()).coordinates,
-        ...Vector.add(position, dx.negated(), dy.negated()).coordinates,
-        ...Vector.add(position, dx, dy.negated()).coordinates,
         ...Vector.add(position, dx, dy).coordinates,
+        ...Vector.add(position, dx, dy.negated()).coordinates,
+        ...Vector.add(position, dx.negated(), dy.negated()).coordinates,
     );
 }
-
 
 export class BoxGeometry extends Geometry {
 
@@ -28,14 +27,15 @@ export class BoxGeometry extends Geometry {
         const dz = new Vector3(0, 0, this.depth / 2);
 
         pushQuad(vertices, dx.negated(), dz, dy);
-        pushQuad(vertices, dx, dz, dy);
+        pushQuad(vertices, dx, dz.negated(), dy);
 
-        pushQuad(vertices, dy, dx, dz);
+        pushQuad(vertices, dy, dx.negated(), dz);
         pushQuad(vertices, dy.negated(), dx, dz);
 
         pushQuad(vertices, dz, dx, dy);
-        pushQuad(vertices, dz.negated(), dx, dy);
+        pushQuad(vertices, dz.negated(), dx.negated(), dy);
 
-        this.vertices(vertices);
+        this.setVertices(vertices);
+        this.setNormals(computeNormals(vertices));
     }
 }

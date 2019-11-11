@@ -1,4 +1,3 @@
-import {Geometry} from "@webgl/geometries";
 import {Program} from "@webgl/program";
 import {VertexAttributeLocation} from "@webgl/locations/attribute";
 import {Attributes} from "@webgl/models/attributes";
@@ -8,25 +7,24 @@ import {Mesh} from "@webgl/models/mesh";
 import {Color} from "@webgl/models/color";
 import {Uniform} from "@webgl/locations/uniform";
 import {Uniforms} from "@webgl/models/uniforms";
-import {Camera} from "@webgl/cameras";
-import {Scene} from "@webgl/scene";
+import {Group} from "@webgl/group";
+import {Matrix4} from "@webgl/matrix";
 
-function setGlobalUniforms(renderer: Renderer, program: Program) {
+function setGlobalUniforms(renderer: Renderer, program: Program, matrix: Matrix4) {
     const u_resolution = new Uniform(program, Uniforms.resolution);
     u_resolution.set([renderer.canvas.clientWidth, renderer.canvas.clientHeight], renderer.context.INT);
 
     const u_ambient = new Uniform(program, Uniforms.ambient);
     u_ambient.set([1, 1, 1], renderer.context.FLOAT);
 
-    const u_world = new Uniform(program, Uniforms.world);
-    u_world.setMatrix(renderer.camera.world);
+    const u_view_projection = new Uniform(program, Uniforms.view_projection);
+    u_view_projection.setMatrix(matrix);
 }
 
 export class Renderer {
     context: WebGLRenderingContext;
     shaders: MaterialShaderCache;
     programs: MaterialProgramCache;
-    camera: Camera;
 
     constructor(parent: HTMLElement);
 
@@ -47,7 +45,6 @@ export class Renderer {
         }
         this.shaders = new MaterialShaderCache(this.context);
         this.programs = new MaterialProgramCache(this.shaders);
-        this.camera = new Camera();
     }
 
     get canvas(): HTMLCanvasElement { return this.context.canvas as HTMLCanvasElement; }
@@ -59,50 +56,40 @@ export class Renderer {
         this.context.enable(this.context.DEPTH_TEST);
     }
 
-    drawGeometry(geometry: Geometry, program: Program) {
-        program.use();
-        geometry.buffer.bind();
+    drawGroup(group: Group, view: Matrix4): void {
+        view = view.multiply(group.transform);
 
-        setGlobalUniforms(this, program);
-
-        const a_position = new VertexAttributeLocation(program, Attributes.position, geometry.dimension);
-        a_position.bind();
-
-        a_position.enable();
-
-        this.context.drawArrays(geometry.mode, 0, geometry.vertexCount);
-    }
-
-    drawMesh(mesh: Mesh) {
-        const program = this.programs.get(mesh.material);
-        mesh.material.apply(program);
-        const u_transform = new Uniform(program, Uniforms.transform);
-        u_transform.setMatrix(mesh.transform);
-        this.drawGeometry(mesh.geometry, program);
-    }
-
-    drawScene(scene: Scene): void {
-        scene.meshes.forEach((meshes, program) => {
+        group.meshes.forEach((meshes, program) => {
             program.use();
 
-            setGlobalUniforms(this, program);
+            setGlobalUniforms(this, program, view);
 
-            meshes.forEach(mesh => {
-                mesh.material.apply(program);
+            meshes.forEach(this.drawMesh.bind(this, program));
+        });
 
-                const u_transform = new Uniform(program, Uniforms.transform);
-                u_transform.setMatrix(mesh.transform);
+        group.groups.forEach(value => this.drawGroup(value, view));
+    }
 
-                const geometry = mesh.geometry;
-                geometry.buffer.bind();
+    private drawMesh(program: Program, mesh: Mesh) {
+        mesh.material.apply(program);
 
-                const a_position = new VertexAttributeLocation(program, Attributes.position, geometry.dimension);
-                a_position.bind();
-                a_position.enable();
+        const u_transform = new Uniform(program, Uniforms.transform);
+        u_transform.setMatrix(mesh.transform);
 
-                this.context.drawArrays(geometry.mode, 0, geometry.vertexCount);
-            })
-        })
+        const geometry = mesh.geometry;
+        geometry.buffer.bind();
+
+        const a_position = new VertexAttributeLocation(program, Attributes.position, geometry.dimension);
+        a_position.enable();
+        a_position.bind();
+
+        geometry.normals.bind();
+
+        const a_normal = new VertexAttributeLocation(program, Attributes.normal, 3);
+        a_normal.enable();
+        a_normal.bind();
+
+        this.context.drawArrays(geometry.mode, 0, geometry.vertexCount);
     }
 
     resize(width: number, height: number) {

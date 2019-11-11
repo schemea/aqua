@@ -72,11 +72,14 @@ export class Matrix<M extends number = number, N extends number = M> {
         return matrix;
     }
 
-    static add<M extends number, N extends number, P extends number, Q extends number>(a: Matrix<M, N>, b: Matrix<P, Q>): AutoMatrix<M, N> {
-        const r = Matrix.create(a.dimensions.m, a.dimensions.n) as AutoMatrix<M, N>;
-        for (let i = 0; i < a.dimensions.m; ++i) {
-            for (let j = 0; j < a.dimensions.n; ++j) {
-                const value = a.get(i, j) + b.get(i, j);
+    static add<M extends number, N extends number>(...args: Matrix<M, N>[]): Matrix<M, N> {
+        const m = args[0].dimensions.m;
+        const n = args[0].dimensions.n;
+
+        const r = Matrix.create(m, n) as AutoMatrix<M, N>;
+        for (let i = 0; i < m; ++i) {
+            for (let j = 0; j < n; ++j) {
+                const value = args.reduce((prev, curr) => prev + curr.get(i, j), 0);
                 r.set(i, j, value);
             }
         }
@@ -168,10 +171,6 @@ export class Matrix<M extends number = number, N extends number = M> {
         return true;
     }
 
-    multiplyScalar(scalar: number) {
-        this.forEach(((v, i, j) => this.set(i, j, v * scalar)));
-    }
-
     assign(matrix: Matrix<M, N>): void {
         this.data = matrix.data;
         this.dimensions = matrix.dimensions;
@@ -207,6 +206,17 @@ export class Matrix<M extends number = number, N extends number = M> {
             }
         }
     }
+
+    multiply(scalar: number): Matrix<M, N>;
+    multiply<P extends number>(matrix: Matrix<N, P>): Matrix<M, P>;
+    multiply(arg: number | Matrix): Matrix {
+        if (typeof arg === "number") {
+            const mat = Matrix.create(this.dimensions.m, this.dimensions.n);
+            mat.data = this.data.map(value => value * arg);
+            return mat;
+        }
+        return Matrix.multiply(this, arg);
+    }
 }
 
 const matricesViews = new Map();
@@ -220,7 +230,6 @@ export function createMatrixView<T extends Matrix = Matrix>(matrix: Matrix, rows
     if (constructor) {
         prototype = constructor.prototype;
     } else {
-        const name = matrixPrototype.constructor.name + "View";
         prototype = Object.create(matrixPrototype, {
             copy: {
                 value() {
@@ -289,7 +298,7 @@ export function createMatrixView<T extends Matrix = Matrix>(matrix: Matrix, rows
             });
         }
 
-        constructor = new Function(`return function ${name}(...args){ return createMatrixView(...args)}`)();
+        constructor = new Function(`return function ${matrixPrototype.constructor.name + "View"}(...args){ return createMatrixView(...args)}`)();
         matricesViews.set(matrixPrototype, constructor);
 
         constructor.prototype = prototype;
@@ -374,28 +383,27 @@ export class SquareMatrix<N extends number = number> extends Matrix<N, N> {
         return det;
     }
 
-    adjugate(): SquareMatrix<N> {
-        const _this = this;
-
-        function exclude(i: number) {
+    cofactor(i, j): number {
+        const exclude = (i: number) => {
             const indices = [];
-            for (let j = 0; j < _this.size; ++j) {
+            for (let j = 0; j < this.size; ++j) {
                 if (j !== i)
                     indices.push(j);
             }
 
             return indices;
-        }
+        };
 
-        function computeCell(i, j): number {
-            const det = createMatrixView<SquareMatrix>(_this, exclude(i), exclude(j)).determinant();
-            return (-1) ** (i + j) * det;
-        }
+        const det = createMatrixView<SquareMatrix>(this, exclude(i), exclude(j)).determinant();
 
+        return (-1) ** (i + j) * det;
+    }
+
+    adjugate(): SquareMatrix<N> {
         const adjugate = Matrix.create<SquareMatrix<N>>(this.dimensions.m, this.dimensions.n);
         for (let i = 0; i < this.dimensions.m; i++) {
             for (let j = 0; j < this.dimensions.n; j++) {
-                adjugate.set(i, j, computeCell(i, j));
+                adjugate.set(i, j, this.cofactor(i, j));
             }
         }
 
@@ -403,9 +411,7 @@ export class SquareMatrix<N extends number = number> extends Matrix<N, N> {
     }
 
     inverse(): SquareMatrix<N> {
-        const adj = this.adjugate();
-        adj.multiplyScalar(1 / this.determinant());
-
+        const adj = this.adjugate().multiply(1 / this.determinant());
         return Matrix.transpose(adj) as SquareMatrix<N>;
     }
 
@@ -436,11 +442,14 @@ export class SquareMatrix<N extends number = number> extends Matrix<N, N> {
 
         return this.multiply(m);
     }
+}
 
-    multiply(matrix: SquareMatrix<N>): SquareMatrix<N> {
-        const r = SquareMatrix.multiply(this, matrix);
-        return r as SquareMatrix<N>;
-    }
+export interface SquareMatrix<N extends number> {
+    multiply(scalar: number): SquareMatrix<N>;
+
+    multiply(matrix: SquareMatrix<N>): SquareMatrix<N>;
+
+    clone(): SquareMatrix<N>;
 }
 
 export class Matrix4 extends SquareMatrix<4> {
@@ -519,6 +528,8 @@ export class Matrix4 extends SquareMatrix<4> {
 }
 
 export interface Matrix4 {
+    multiply(scalar: number): Matrix4;
+
     multiply(matrix: Matrix4): Matrix4;
 
     translate(x: number, y?: number, z?: number): Matrix4;
@@ -532,8 +543,4 @@ export interface Matrix4 {
     inverse(): Matrix4;
 
     clone(): Matrix4;
-}
-
-export interface SquareMatrix<N extends number> {
-    clone(): SquareMatrix<N>;
 }

@@ -8,7 +8,7 @@ export class PerspectiveCamera extends Camera {
         super();
 
         this.updateProjectionMatrix();
-        this.updateWorldMatrix();
+        this.updateViewProjectionMatrix();
     }
 
     updateProjectionMatrix(): void {

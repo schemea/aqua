@@ -1,3 +1,5 @@
+import {Matrix, SquareMatrix} from "./matrix";
+
 export class Vector<D extends number = number> {
     coordinates: number[];
 
@@ -47,6 +49,23 @@ export class Vector<D extends number = number> {
             }
             return vec;
         }
+    }
+
+
+    dot(vector: Vector<D>): number {
+        if (vector.dimension !== this.dimension) {
+            throw "vector must be of same dimensions";
+        }
+
+        const d = vector.dimension;
+
+        const a = Matrix.create(1, d);
+        const b = Matrix.create(d, 1);
+
+        a.data = this.coordinates;
+        b.data = vector.coordinates;
+
+        return Matrix.multiply(a, b).get(0, 0);
     }
 
     clone(): Vector<D> {
@@ -119,6 +138,20 @@ export class Vector3 extends Vector {
 
     set z(value: number) { this.coordinates[2] = value; }
 
+    cross(vector: Vector3): Vector3 {
+        const matrix = SquareMatrix.fromArray([
+            0, 0, 0,
+            ...this.coordinates,
+            ...vector.coordinates
+        ]);
+
+        return new Vector3(
+            matrix.cofactor(0, 0),
+            matrix.cofactor(0, 1),
+            matrix.cofactor(0, 2)
+        );
+    }
+
     static fromSpherical(r: number, theta: number, phi: number) {
         const x = r * Math.sin(theta) * Math.cos(phi);
         const y = r * Math.sin(theta) * Math.sin(phi);
@@ -139,6 +172,7 @@ export class Vector3 extends Vector {
 
 export interface Vector3 {
     coordinates: [number, number, number];
+    dimension: 3;
 
     clone(): Vector3;
 
