@@ -182,7 +182,7 @@ export class Matrix<M extends number = number, N extends number = M> {
     }
 
     toString(): string {
-        let data = this.data.map(val => val.toString());
+        let data = this.data.map(val => val.toFixed(1));
         const max = data.reduce((prev, curr) => Math.max(prev, curr.length), 0);
         data = data.map(value => value.padStart(max + 1));
         for (let i = 0; i < this.dimensions.m; i++) {

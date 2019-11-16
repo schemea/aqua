@@ -1,3 +1,5 @@
+import {Mode} from "@webgl/models/mode";
+
 export class Buffer {
     handle: WebGLBuffer;
 
@@ -25,7 +27,7 @@ export class Buffer {
 }
 
 export class VertexBuffer extends Buffer {
-    mode: GLenum;
+    mode: Mode;
     length: number;
 
     constructor(context: WebGLRenderingContext, target: GLenum) {

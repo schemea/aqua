@@ -1,20 +1,39 @@
 export class Color {
     channels: [number, number, number, number];
 
-    constructor(r?: number, g?: number, b?: number, a?: number);
-
+    constructor();
+    constructor(red: number, green: number, blue: number, alpha?: number);
+    constructor(hex: number, alpha?: number);
     constructor(rgba: number[]);
 
-    constructor(...rgba: number[] | [number[]]) {
+    constructor(...rgba: number[] | [number[]] | [number]) {
+        const channelFromArray = (rgba: number[]) => {
+            this.channels = [
+                typeof rgba[0] === "number" ? rgba[0] : 0,
+                typeof rgba[1] === "number" ? rgba[1] : 0,
+                typeof rgba[2] === "number" ? rgba[2] : 0,
+                typeof rgba[3] === "number" ? rgba[3] : 1
+            ];
+        };
+
         if (typeof rgba[0] != "number") {
-            rgba = rgba[0];
+            // constructor(number[])
+            channelFromArray(rgba[0]);
+        } else if (rgba.length < 3) {
+            // constructor(hex)
+
+            const hex = rgba[0];
+
+            channelFromArray([
+                (hex >> 8 * 0 & 0xff) / 255,
+                (hex >> 8 * 1 & 0xff) / 255,
+                (hex >> 8 * 2 & 0xff) / 255,
+                rgba[1] as number
+            ]);
+        } else {
+            // constructor(r, g, b, a)
+            channelFromArray(<number[]>rgba);
         }
-        this.channels = [
-            rgba[0] as number || 0,
-            rgba[1] as number || 0,
-            rgba[2] as number || 0,
-            rgba[3] as number || 1
-        ];
     }
 
     get red() { return this.channels[0]; }
@@ -35,6 +54,6 @@ export class Color {
 }
 
 export namespace Color {
-    export const BLACK = new Color(0, 0, 0, 1);
-    export const WHITE = new Color(1, 1, 1, 1);
+    export const BLACK = new Color(0, 0, 0);
+    export const WHITE = new Color(1, 1, 1);
 }

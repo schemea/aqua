@@ -26,16 +26,16 @@ export class BoxGeometry extends Geometry {
         const dy = new Vector3(0, this.height / 2, 0);
         const dz = new Vector3(0, 0, this.depth / 2);
 
-        pushQuad(vertices, dx.negated(), dz, dy);
-        pushQuad(vertices, dx, dz.negated(), dy);
+        pushQuad(vertices, dx.negated(), dz.negated(), dy);
+        pushQuad(vertices, dx, dz, dy);
 
-        pushQuad(vertices, dy, dx.negated(), dz);
-        pushQuad(vertices, dy.negated(), dx, dz);
+        pushQuad(vertices, dy, dx, dz);
+        pushQuad(vertices, dy.negated(), dx.negated(), dz);
 
-        pushQuad(vertices, dz, dx, dy);
-        pushQuad(vertices, dz.negated(), dx.negated(), dy);
+        pushQuad(vertices, dz, dx.negated(), dy);
+        pushQuad(vertices, dz.negated(), dx, dy);
 
         this.setVertices(vertices);
-        this.setNormals(computeNormals(vertices));
+        this.setNormals(computeNormals(vertices, this.mode));
     }
 }

@@ -1,5 +1,6 @@
 import {VertexBuffer} from "@webgl/models/buffer";
 import {Vector3} from "@webgl/vector";
+import {Mode} from "@webgl/models/mode";
 
 export class Geometry {
     readonly buffer: VertexBuffer;
@@ -29,12 +30,14 @@ export class Geometry {
     }
 }
 
-export function computeNormals(vertices: number[]): number[] {
-    if (vertices.length % 9 !== 0) {
-        throw "vertices.length must be a multiple of 9";
-    }
+export function computeNormals(vertices: number[], mode: Mode): number[] {
+    // if (vertices.length % 9 !== 0) {
+    //
+    //     throw "vertices.length must be a multiple of 9";
+    // }
 
     function getPoint(i: number) {
+
         return new Vector3(
             vertices[i],
             vertices[i + 1],
@@ -42,17 +45,46 @@ export function computeNormals(vertices: number[]): number[] {
         );
     }
 
+    function computeNormal(a: Vector3, b: Vector3, c: Vector3): [number, number, number] {
+        return b.from(a).cross(c.from(a)).coordinates;
+    }
+
     const normals: number[] = [];
 
-    for (let i = 0; i < vertices.length; i += 9) {
-        const a = getPoint(i);
-        const b = getPoint(i + 3);
-        const c = getPoint(i + 6);
+    if (mode === Mode.TRIANGLES) {
+        for (let i = 0; i < vertices.length; i += 9) {
+            const a = getPoint(i);
+            const b = getPoint(i + 3);
+            const c = getPoint(i + 6);
 
-        for (let j = 0; j < 3; j++) {
-            normals.push(...b.from(a).cross(c.from(a)).coordinates);
+            const normal = computeNormal(a, b, c);
+
+            for (let j = 0; j < 3; j++) {
+                normals.push(...normal);
+            }
+        }
+    } else if (mode === Mode.TRIANGLE_STRIP) {
+        {
+            const a = getPoint(0);
+            const b = getPoint(3);
+            const c = getPoint(6);
+
+            const normal = computeNormal(a, b, c);
+
+            for (let i = 0; i < 3; i++) {
+                normals.push(...normal);
+            }
+        }
+
+        for (let i = 3; i < vertices.length; i += 3) {
+            const a = getPoint(i);
+            const b = getPoint(i + 3);
+            const c = getPoint(i + 6);
+
+            normals.push(...computeNormal(a, b, c))
         }
     }
+
 
     return normals;
 }

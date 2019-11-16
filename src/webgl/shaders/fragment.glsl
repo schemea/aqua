@@ -5,6 +5,10 @@ varying vec3 v_normal;
 
 void main() {
     vec3 normal = normalize(v_normal);
-    float light = dot(normal, vec3(0.15, -0.15, -0.75));
+    if (!gl_FrontFacing){
+        normal = -normal;
+    }
+    float light = -dot(normal, vec3(0.15, -0.15, -0.75));
+    //    float light = 0.5;
     gl_FragColor = vec4(v_color.rgb * light, v_color.a);
 }

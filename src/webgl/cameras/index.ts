@@ -17,18 +17,13 @@ export class Camera extends WebGLElement {
     }
 
     rotate(theta: number, axis: Vector3): void {
-        super.rotate(-theta, axis);
+        super.rotate(theta, axis);
     }
 
     updateTransformMatrix(): void {
-        this.transform = this.view.inverse();
-        // this.view = this.transform.inverse();
-    }
-
-    updateViewMatrix(): void {
-        this.view = Matrix4.identity(4);
-        this.view = this.view.translate(this.position.negated());
-        this.view = this.view.multiply(this.rotation);
+        // this.transform = this.view.inverse();
+        super.updateTransformMatrix();
+        this.view = this.transform.inverse();
     }
 
     updateProjectionMatrix(): void { this.projection = Matrix4.identity(4); }
@@ -37,6 +32,7 @@ export class Camera extends WebGLElement {
 
     unproject(vector: Vector2): Vector3 {
         const viewProjection = this.view.multiply(this.projection);
+        console.log(viewProjection.toString());
         let mat = Matrix.create(4, 1);
         mat.data = [...vector.coordinates, 1, 1];
         mat = Matrix.multiply(this.viewProjection.inverse(), mat);

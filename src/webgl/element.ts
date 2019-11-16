@@ -24,7 +24,10 @@ export class WebGLElement {
             -v.y, v.x, 0
         ]);
 
-        SquareMatrix.add(Matrix.identity(3), vx, vx.multiply(vx).multiply(1 / (1 + c)));
+        const rot = SquareMatrix.add(Matrix.identity(3), vx, vx.multiply(vx).multiply(1 / (1 + c)));
+        const mat4 = new Matrix4();
+        rot.forEach((value, i, j) => mat4.set(i, j, value));
+        this.rotation = mat4;
     }
 
     updateTransformMatrix(): void {

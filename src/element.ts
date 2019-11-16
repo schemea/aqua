@@ -1,6 +1,7 @@
-import {Mesh, Vector3} from "three";
 import {Bounds} from "./bounds";
 import {Direction} from "./direction";
+import {Vector3} from "@webgl/vector";
+import {Mesh} from "@webgl/models/mesh";
 
 interface BoundsLike {
     left: number;
@@ -13,20 +14,22 @@ interface BoundsLike {
 
 export class Element3D {
     volume!: Vector3;
+    movement?: Vector3;
+    mesh!: Mesh;
 
-    get position() { return this.mesh.position; }
+    get position(): Vector3 { return this.mesh.position; }
 
     get x() { return this.position.x; }
 
+    set x(value: number) { this.position.x = value; }
+
     get y() { return this.position.y; }
+
+    set y(value: number) { this.position.y = value; }
 
     get z() { return this.position.z; }
 
-    set x(value: number) { this.position.setX(value); }
-
-    set y(value: number) { this.position.setY(value); }
-
-    set z(value: number) { this.position.setZ(value); }
+    set z(value: number) { this.position.z = value; }
 
     get bounds() {
         const width = this.volume.x;
@@ -93,6 +96,7 @@ export class Element3D {
             return Direction.NONE;
     }
 
-    movement?: Vector3;
-    mesh!: Mesh;
+    updateTransformMatrix(): void {
+        this.mesh.updateTransformMatrix();
+    }
 }

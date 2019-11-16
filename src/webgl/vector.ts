@@ -70,7 +70,7 @@ export class Vector<D extends number = number> {
 
     clone(): Vector<D> {
         const vec = Vector.create(this) as Vector<D>;
-        vec.coordinates = [...this.coordinates];
+        vec.assign(this);
         return vec;
     }
 
@@ -89,6 +89,16 @@ export class Vector<D extends number = number> {
 
     distance(vec: Vector<D>): number {
         return this.from(vec).norm();
+    }
+
+    assign(vec: Vector<D>): void {
+        this.coordinates = [...vec.coordinates];
+    }
+
+    multiply(scalar: number): Vector<D> {
+        const vec = this.clone();
+        vec.coordinates = vec.coordinates.map(value => value * scalar);
+        return vec;
     }
 
     normalized(): Vector<D> {
@@ -138,6 +148,14 @@ export class Vector3 extends Vector {
 
     set z(value: number) { this.coordinates[2] = value; }
 
+    static fromSpherical(r: number, theta: number, phi: number) {
+        const x = r * Math.sin(theta) * Math.cos(phi);
+        const y = r * Math.sin(theta) * Math.sin(phi);
+        const z = r * Math.cos(theta);
+
+        return new Vector3(x, y, z);
+    }
+
     cross(vector: Vector3): Vector3 {
         const matrix = SquareMatrix.fromArray([
             0, 0, 0,
@@ -150,14 +168,6 @@ export class Vector3 extends Vector {
             matrix.cofactor(0, 1),
             matrix.cofactor(0, 2)
         );
-    }
-
-    static fromSpherical(r: number, theta: number, phi: number) {
-        const x = r * Math.sin(theta) * Math.cos(phi);
-        const y = r * Math.sin(theta) * Math.sin(phi);
-        const z = r * Math.cos(theta);
-
-        return new Vector3(x, y, z);
     }
 
     toSpherical(): { r: number, phi: number, theta: number } {
@@ -181,4 +191,6 @@ export interface Vector3 {
     normalized(): Vector3;
 
     negated(): Vector3;
+
+    multiply(scalar: number): Vector3;
 }
