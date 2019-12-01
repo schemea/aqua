@@ -25,7 +25,8 @@
     "jest": "^24.9.0",
     "jest-benchmarks": "^0.2.1",
     "raw-loader": "^3.1.0",
-    "ts-jest": "^24.1.0"
+    "ts-jest": "^24.1.0",
+    "webgl-debug": "^2.0.1"
   },
   "scripts": {
     "build": "webpack",

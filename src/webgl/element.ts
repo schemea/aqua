@@ -1,11 +1,19 @@
-import {Vector3} from "@webgl/vector";
-import {Matrix, Matrix4, SquareMatrix} from "@webgl/matrix";
+import { Vector3 } from "@webgl/vector";
+import { Matrix, Matrix4, SquareMatrix } from "@webgl/matrix";
 
 export class WebGLElement {
     position = new Vector3();
     rotation = new Matrix4();
 
     transform = Matrix.identity(4) as Matrix4;
+
+    /** HOOKS */
+
+    beforeDraw() { }
+
+    afterDraw() { }
+
+    /** HOOKS END */
 
     lookAt(vector: Vector3): void {
         vector.from(this.position);
@@ -21,10 +29,10 @@ export class WebGLElement {
         const vx = SquareMatrix.fromArray([
             0, -v.z, v.y,
             v.z, 0, -v.x,
-            -v.y, v.x, 0
+            -v.y, v.x, 0,
         ]);
 
-        const rot = SquareMatrix.add(Matrix.identity(3), vx, vx.multiply(vx).multiply(1 / (1 + c)));
+        const rot  = SquareMatrix.add(Matrix.identity(3), vx, vx.multiply(vx).multiply(1 / (1 + c)));
         const mat4 = new Matrix4();
         rot.forEach((value, i, j) => mat4.set(i, j, value));
         this.rotation = mat4;

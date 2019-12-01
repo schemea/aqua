@@ -3,13 +3,14 @@ import { CacheManager } from "@webgl/utils";
 
 export class Program {
     handle: WebGLProgram;
-    name: string = "";
+    name: string      = "";
+    shaders: Shader[] = [];
 
     constructor(public context: WebGLRenderingContext) {
         this.handle = context.createProgram();
     }
 
-    static generateName(...shaders: Shader[]): string { return shaders.map(value => value.handle).join("-"); }
+    static generateName(...shaders: Shader[]): string { return shaders.map(value => value.name).join("-"); }
 
     use(): void { this.context.useProgram(this.handle); }
 
@@ -30,7 +31,8 @@ export class Program {
 
     attachShader(shader: Shader) {
         this.context.attachShader(this.handle, shader.handle);
-        this.name += "-" + shader.handle;
+        this.shaders.push(shader);
+        this.name = Program.generateName(...this.shaders);
     }
 }
 

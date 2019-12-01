@@ -1,11 +1,31 @@
-import {CacheManager} from "@webgl/utils";
-import {Material} from "@webgl/materials";
+import { CacheManager } from "@webgl/utils";
+import { Material } from "@webgl/materials";
+
+
+const shadersNB: { [k in string]: number } = {};
+
+function getPrefix(type: GLenum) {
+    switch (type) {
+        case WebGLRenderingContext.VERTEX_SHADER:
+            return "v";
+        case  WebGLRenderingContext.FRAGMENT_SHADER:
+            return "f";
+        default:
+            throw "invalid type";
+    }
+}
 
 export class Shader {
     handle: WebGLShader;
+    id: number;
 
     constructor(public context: WebGLRenderingContext, public type: GLenum) {
         this.handle = context.createShader(type);
+        this.id     = shadersNB[type] = shadersNB[type] + 1 || 0;
+    }
+
+    get name(): string {
+        return getPrefix(this.type) + this.id;
     }
 
     get source(): string { return this.context.getShaderSource(this.handle); }
@@ -14,7 +34,7 @@ export class Shader {
 
     static load(context: WebGLRenderingContext, name: string, type: GLenum): Shader {
         const shader = new Shader(context, type);
-        fetch(`/shaders/${name}.glsl`).then(response => response.text()).then(source => {
+        fetch(`/shaders/${ name }.glsl`).then(response => response.text()).then(source => {
             shader.source = source;
             shader.compile();
         }).catch(console.error);

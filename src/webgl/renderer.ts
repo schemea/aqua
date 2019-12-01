@@ -9,6 +9,7 @@ import { Uniform } from "@webgl/locations/uniform";
 import { Uniforms } from "@webgl/models/uniforms";
 import { Group } from "@webgl/group";
 import { Matrix4 } from "@webgl/matrix";
+import WebGLDebugUtils from "webgl-debug";
 
 function setGlobalUniforms(renderer: Renderer, program: Program, world: Matrix4, view: Matrix4) {
     const u_resolution = new Uniform(program, Uniforms.resolution);
@@ -46,6 +47,34 @@ export class Renderer {
         } else {
             throw "invalid argument passed to Renderer constructor";
         }
+
+        const logError = (err, func, args) => {
+            const error = WebGLDebugUtils.glEnumToString(err) + " was caused by call to " + func;
+            console.error(error);
+        };
+
+        // const logFuncCall = (func, args) => {
+        //     const logger = (): string[] => {
+        //         if ("log" in window) {
+        //             return (window as any).log;
+        //         } else {
+        //             const log = (window as any).log = [];
+        //
+        //             Object.defineProperties(log, {
+        //                 last: { get() { return log[log.length - 1]; } },
+        //                 first: { get() { return log[0]; } },
+        //             });
+        //
+        //             return log;
+        //         }
+        //     };
+        //     const msg = `${func}(${WebGLDebugUtils.glFunctionArgsToString(func, args)})`;
+        //     logger().push(msg);
+        // };
+
+        // TODO: Remove debugging utilities
+        // this.context = WebGLDebugUtils.makeDebugContext(this.context, logError);
+
         this.shaders  = new MaterialShaderCache(this.context);
         this.programs = new MaterialProgramCache(this.shaders);
     }
@@ -53,14 +82,15 @@ export class Renderer {
     get canvas(): HTMLCanvasElement { return this.context.canvas as HTMLCanvasElement; }
 
     enableDefaultFeatures() {
+        this.context.enable(this.context.CULL_FACE);
         this.context.enable(this.context.BLEND);
         this.context.blendFunc(this.context.SRC_ALPHA, this.context.ONE_MINUS_SRC_ALPHA);
 
         this.context.enable(this.context.DEPTH_TEST);
+        // this.context.depthFunc(this.context.LESS);
     }
 
     drawGroup(group: Group, view: Matrix4): void {
-        debugger
         const drawGroupRecursion = (group: Group, world: Matrix4) => {
             world = world.multiply(group.transform);
 
@@ -97,7 +127,9 @@ export class Renderer {
         a_normal.enable();
         a_normal.bind();
 
+        mesh.beforeDraw();
         this.context.drawArrays(geometry.mode, 0, geometry.vertexCount);
+        mesh.afterDraw();
     }
 
     resize(width: number, height: number) {

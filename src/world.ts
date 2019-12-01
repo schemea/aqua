@@ -5,6 +5,7 @@ import { PerspectiveCamera } from "@webgl/cameras/perspective";
 import { Group } from "@webgl/group";
 import { Vector3 } from "@webgl/vector";
 
+
 export class World {
     renderer: Renderer;
     camera: PerspectiveCamera;
@@ -14,10 +15,10 @@ export class World {
 
     constructor() {
         this.renderer = new Renderer(document.body);
-        this.camera = new PerspectiveCamera(50, innerWidth / innerHeight, 0.0001, 1000);
+        this.camera   = new PerspectiveCamera(50, innerWidth / innerHeight, 0.0001, 1000);
 
         this.aquarium = new Aquarium(this);
-        this.scene = new Group(this.context);
+        this.scene    = new Group(this.context);
 
         // this.scene.background = new Color(0x020210);
         // this.scene.background = new Color(0xdddddd);
@@ -45,8 +46,8 @@ export class World {
 
         // const fish = new Fish(this);
         // this.scene.addMesh(fish.mesh);
-        const fish = this.aquarium.addFish(new Vector3(0, 0, 0));
-        console.log("click");
+        const fish    = this.aquarium.addFish(new Vector3(0, 0, 0));
+        fish.movement = Vector3.fromSpherical(1, Math.random(), Math.random());
     }
 
     initializeLights() {
@@ -96,14 +97,13 @@ export class World {
     }
 
     private renderLoop(newTimestamp: DOMHighResTimeStamp) {
-        const elapsed = newTimestamp - this.timestamp;
+        const elapsed  = newTimestamp - this.timestamp;
         this.timestamp = newTimestamp;
         this.aquarium.meshes.rotateY(0.1);
         this.aquarium.updateTransformMatrix();
 
-        // this.aquarium.update(elapsed);
+        this.aquarium.update(elapsed);
 
         this.renderer.drawGroup(this.scene, this.camera.viewProjection);
-        // this.renderer.drawGroup(this.aquarium.meshes, this.camera.viewProjection);
     }
 }

@@ -1,8 +1,8 @@
-import {Configuration} from "webpack";
+import { Configuration } from "webpack";
 import path from "path";
-import {CleanWebpackPlugin} from "clean-webpack-plugin";
+import { CleanWebpackPlugin } from "clean-webpack-plugin";
 import HtmlWebpackPlugin from "html-webpack-plugin";
-import {TsConfigPathsPlugin} from "awesome-typescript-loader";
+import { TsConfigPathsPlugin } from "awesome-typescript-loader";
 import CopyPlugin from "copy-webpack-plugin";
 
 
@@ -18,55 +18,55 @@ const config: Configuration = {
         rules: [
             {
                 test: /\.tsx?$/,
-                loader: "awesome-typescript-loader"
+                loader: "awesome-typescript-loader",
             },
             {
                 test: /\.scss$/,
                 use: [
                     {
-                        loader: "style-loader"
+                        loader: "style-loader",
                     },
                     {
-                        loader: "css-loader"
+                        loader: "css-loader",
                     },
                     {
-                        loader: "resolve-url-loader"
+                        loader: "resolve-url-loader",
                     },
                     {
                         loader: "sass-loader",
                         options: {
-                            sourceMap: true
-                        }
-                    }
-                ]
+                            sourceMap: true,
+                        },
+                    },
+                ],
             },
             {
                 test: /\.glsl$/,
-                loader: "raw-loader"
-            }
-        ]
+                loader: "raw-loader",
+            },
+        ],
     },
     resolve: {
         extensions: [
             ".js",
             ".jsx",
             ".ts",
-            ".tsx"
+            ".tsx",
         ],
-        plugins: [new TsConfigPathsPlugin()]
+        plugins: [ new TsConfigPathsPlugin() ],
     },
     target: "web",
     plugins: [
         new CleanWebpackPlugin(),
-        new CopyPlugin([{from: "src/webgl/shaders", to: "shaders"}]),
+        new CopyPlugin([ { from: "src/webgl/shaders", to: "shaders" } ]),
         new HtmlWebpackPlugin({
-            title: "Aqua"
-        })
+            title: "Aqua",
+        }),
     ],
     devServer: {
         contentBase: path.join(__dirname, "dist"),
-        compress: true
-    }
+        compress: true,
+    },
 };
 
 switch (process.env.NODE_ENV as Configuration["mode"]) {

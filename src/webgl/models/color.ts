@@ -1,38 +1,39 @@
 export class Color {
-    channels: [number, number, number, number];
+    channels: [ number, number, number, number ];
 
     constructor();
     constructor(red: number, green: number, blue: number, alpha?: number);
     constructor(hex: number, alpha?: number);
     constructor(rgba: number[]);
 
-    constructor(...rgba: number[] | [number[]] | [number]) {
-        const channelFromArray = (rgba: number[]) => {
+    constructor(...rgba) {
+        const channelsFromArray = (rgba: number[]) => {
             this.channels = [
-                typeof rgba[0] === "number" ? rgba[0] : 0,
-                typeof rgba[1] === "number" ? rgba[1] : 0,
-                typeof rgba[2] === "number" ? rgba[2] : 0,
-                typeof rgba[3] === "number" ? rgba[3] : 1
+                typeof rgba[0] === "number" ? rgba[0] / 255 : 0,
+                typeof rgba[1] === "number" ? rgba[1] / 255 : 0,
+                typeof rgba[2] === "number" ? rgba[2] / 255 : 0,
+                typeof rgba[3] === "number" ? rgba[3] : 1,
             ];
         };
 
         if (typeof rgba[0] != "number") {
             // constructor(number[])
-            channelFromArray(rgba[0]);
+            channelsFromArray(rgba[0]);
         } else if (rgba.length < 3) {
-            // constructor(hex)
+            // constructor(hex, alpha?)
 
             const hex = rgba[0];
 
-            channelFromArray([
-                (hex >> 8 * 0 & 0xff) / 255,
-                (hex >> 8 * 1 & 0xff) / 255,
-                (hex >> 8 * 2 & 0xff) / 255,
-                rgba[1] as number
+            // noinspection PointlessArithmeticExpressionJS
+            channelsFromArray([
+                hex >> 8 * 2 & 0xff,
+                hex >> 8 * 1 & 0xff,
+                hex >> 8 * 0 & 0xff,
+                rgba[1],
             ]);
         } else {
             // constructor(r, g, b, a)
-            channelFromArray(<number[]>rgba);
+            channelsFromArray(rgba);
         }
     }
 
@@ -54,6 +55,6 @@ export class Color {
 }
 
 export namespace Color {
-    export const BLACK = new Color(0, 0, 0);
-    export const WHITE = new Color(1, 1, 1);
+    export const BLACK = new Color(0x000000);
+    export const WHITE = new Color(0xffffff);
 }

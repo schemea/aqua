@@ -29,12 +29,12 @@ export class Element3D {
     set z(value: number) { this.position.z = value; }
 
     get bounds() {
-        const width = this.volume.x;
+        const width  = this.volume.x;
         const height = this.volume.y;
-        const depth = this.volume.z;
-        const x = this.x - width / 2;
-        const y = this.y - height / 2;
-        const z = this.z - depth / 2;
+        const depth  = this.volume.z;
+        const x      = this.x - width / 2;
+        const y      = this.y - height / 2;
+        const z      = this.z - depth / 2;
 
         return new Bounds(x, y, z, width, height, depth);
     }
@@ -50,7 +50,7 @@ export class Element3D {
     }
 
     intersect(other: Element3D, minDistance?: number): Axe {
-        const bounds = this.bounds;
+        const bounds  = this.bounds;
         const oBounds = other.bounds;
 
         if (minDistance) {
@@ -93,5 +93,8 @@ export class Element3D {
             return Direction.NONE;
     }
 
-    updateTransformMatrix(): void { }
+    updateTransformMatrix(): void {
+        debugger;
+        throw "not implemented";
+    }
 }

@@ -16,9 +16,9 @@ export class Fish extends Element3D {
     constructor(public world: World) {
         super();
 
-        this.volume    = new Vector3(0.2, 0.1, 0.1);
+        this.volume    = new Vector3(0.1, 0.05, 0.05);
         const geometry = new BoxGeometry(world.context, this.volume.x, this.volume.y, this.volume.z);
-        const color    = new Color(0xffffff, 0.9);
+        const color    = new Color(0xf05050);
         // const color    = new Color(0xffffff, 0.5);
         const material = new BasicMaterial(color);
         // material.emissive = color;
@@ -31,20 +31,22 @@ export class Fish extends Element3D {
     update(delta: number) {
         this.oldPosition = this.position.clone();
         const maxEdge    = Math.max(this.volume.x, this.volume.y, this.volume.z);
+
+        /** detection radius, relative to fish size */
+
         if (this.following) {
-            if (this.oldPosition.distance(this.following.position) > maxEdge * 1.1) {
+            if (this.position.distance(this.following.position) > maxEdge * 1.1) {
                 this.movement = this.following.movement;
-                // this.movement = Vector.normalize(Vector.relativeTo(this.oldPosition, this.following.position));
-                this.movement = this.following.position.from(this.oldPosition).normalized();
+                // this.movement = Vector.normalize(Vector.relativeTo(this.position, this.following.position));
+                this.movement = this.following.position.from(this.position).normalized();
                 this.movement = this.movement.multiply(this.speed);
             }
         } else {
-
             this.aquarium.fishes.forEach(fish => {
                 if (fish === this)
                     return;
 
-                const d = this.oldPosition.distance(this.position);
+                const d = this.position.distance(fish.position);
 
                 if (d < maxEdge * 1.2) {
                     this.movement = fish.movement;
@@ -72,5 +74,10 @@ export class Fish extends Element3D {
                     break;
             }
         }
+    }
+
+    updateTransformMatrix(): void {
+        this.mesh.position = this.position;
+        this.mesh.updateTransformMatrix();
     }
 }

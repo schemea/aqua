@@ -81,4 +81,6 @@ import { World } from "@src/world";
 const world = new World();
 const aqua  = world.aquarium;
 
+addEventListener("resize", () => world.resize(innerWidth, innerHeight));
+
 console.log(aqua);
