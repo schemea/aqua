@@ -1,7 +1,6 @@
-import {Bounds} from "./bounds";
-import {Direction} from "./direction";
-import {Vector3} from "@webgl/vector";
-import {Mesh} from "@webgl/models/mesh";
+import { Bounds } from "./bounds";
+import { Direction } from "./direction";
+import { Vector3 } from "@webgl/vector";
 
 interface BoundsLike {
     left: number;
@@ -15,9 +14,7 @@ interface BoundsLike {
 export class Element3D {
     volume!: Vector3;
     movement?: Vector3;
-    mesh!: Mesh;
-
-    get position(): Vector3 { return this.mesh.position; }
+    position = new Vector3();
 
     get x() { return this.position.x; }
 
@@ -96,7 +93,5 @@ export class Element3D {
             return Direction.NONE;
     }
 
-    updateTransformMatrix(): void {
-        this.mesh.updateTransformMatrix();
-    }
+    updateTransformMatrix(): void { }
 }

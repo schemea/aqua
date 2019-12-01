@@ -1,5 +1,5 @@
 import "../styles/main.scss"
-import {World} from "@src/world";
+import { World } from "@src/world";
 
 // declare global{
 //     interface Window {
@@ -79,3 +79,6 @@ import {World} from "@src/world";
 // });
 
 const world = new World();
+const aqua  = world.aquarium;
+
+console.log(aqua);

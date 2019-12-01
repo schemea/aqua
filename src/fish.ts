@@ -1,22 +1,25 @@
-import {Element3D} from "./element";
-import {Direction} from "./direction";
-import {Vector3} from "@webgl/vector";
-import {BoxGeometry} from "@webgl/geometries/box";
-import {World} from "./world";
-import {BasicMaterial} from "@webgl/materials";
-import {Color} from "@webgl/models/color";
-import {Mesh} from "@webgl/models/mesh";
+import { Element3D } from "./element";
+import { Direction } from "./direction";
+import { Vector3 } from "@webgl/vector";
+import { BoxGeometry } from "@webgl/geometries/box";
+import { World } from "./world";
+import { BasicMaterial } from "@webgl/materials";
+import { Color } from "@webgl/models/color";
+import { Mesh } from "@webgl/models/mesh";
 
 export class Fish extends Element3D {
     following?: Fish;
     speed = 0.3;
     oldPosition!: Vector3;
+    mesh: Mesh;
 
     constructor(public world: World) {
         super();
-        this.volume = new Vector3(0.05, 0.025, 0.025);
+
+        this.volume    = new Vector3(0.2, 0.1, 0.1);
         const geometry = new BoxGeometry(world.context, this.volume.x, this.volume.y, this.volume.z);
-        const color = new Color(0x101050);
+        const color    = new Color(0xffffff, 0.9);
+        // const color    = new Color(0xffffff, 0.5);
         const material = new BasicMaterial(color);
         // material.emissive = color;
         // material.emissiveIntensity = 0.05;
@@ -27,7 +30,7 @@ export class Fish extends Element3D {
 
     update(delta: number) {
         this.oldPosition = this.position.clone();
-        const maxEdge = Math.max(this.volume.x, this.volume.y, this.volume.z);
+        const maxEdge    = Math.max(this.volume.x, this.volume.y, this.volume.z);
         if (this.following) {
             if (this.oldPosition.distance(this.following.position) > maxEdge * 1.1) {
                 this.movement = this.following.movement;

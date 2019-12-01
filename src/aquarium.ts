@@ -1,46 +1,24 @@
-import {Fish} from "./fish";
-import {Element3D} from "./element";
-import {Vector3} from "@webgl/vector";
-import {BoxGeometry} from "@webgl/geometries/box";
-import {World} from "@src/world";
-import {Mesh} from "@webgl/models/mesh";
-import {BasicMaterial} from "@webgl/materials";
-import {Color} from "@webgl/models/color";
+import { Fish } from "./fish";
+import { Element3D } from "./element";
+import { Vector3 } from "@webgl/vector";
+import { BoxGeometry } from "@webgl/geometries/box";
+import { World } from "@src/world";
+import { Mesh } from "@webgl/models/mesh";
+import { BasicMaterial } from "@webgl/materials";
+import { Color } from "@webgl/models/color";
+import { Group } from "@webgl/group";
 
 export class Aquarium extends Element3D {
-    fishes: Fish[] = [];
+    fishes = [] as Fish[];
+    meshes = new Group(this.world.context);
 
     constructor(public world: World) {
         super();
 
-        this.volume = new Vector3(2, 1, 1);
+        this.volume    = new Vector3(2, 1, 1);
         const geometry = new BoxGeometry(world.context, this.volume.x, this.volume.y, this.volume.z);
-        this.mesh = new Mesh(geometry, new BasicMaterial(new Color(0xcccccc, 0.2)));
 
-
-        // const glassMaterial = new MeshPhysicalMaterial({
-        //     color: new Color(0x000000),
-        //     transparent: true,
-        //     opacity: 0.15,
-        //     side: DoubleSide
-        // });
-
-        // glassMaterial.reflectivity = 8;
-        // glassMaterial.metalness = 1.5;
-        // glassMaterial.refractionRatio = 10.5;
-
-        // const transparentMaterial = new MeshBasicMaterial({
-        //     transparent: true,
-        //     opacity: 0
-        // });
-
-        // for (const face of geometry.faces)
-        //     face.materialIndex = 0;
-        // geometry.faces[4].materialIndex = 1;
-        // geometry.faces[5].materialIndex = 1;
-
-        // this.mesh = new Mesh(geometry, [glassMaterial, transparentMaterial]);
-
+        this.meshes.addMesh(new Mesh(geometry, new BasicMaterial(new Color(0xcccccc, 0.075))));
     }
 
     update(delta: DOMHighResTimeStamp) {
@@ -49,7 +27,18 @@ export class Aquarium extends Element3D {
         });
     }
 
-    addFish(...fishes: Fish[]) {
-        this.fishes.push(...fishes);
+    addFish(position: Vector3): Fish {
+        const fish = new Fish(this.world);
+        // fish.position.assign(position);
+        this.meshes.addMesh(fish.mesh);
+        // this.fishes.push(fish);
+
+        return fish;
+    }
+
+    updateTransformMatrix(): void {
+        super.updateTransformMatrix();
+        this.meshes.updateTransformMatrix();
+        console.log(this.meshes.transform)
     }
 }

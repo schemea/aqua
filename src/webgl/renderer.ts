@@ -1,24 +1,27 @@
-import {Program} from "@webgl/program";
-import {VertexAttributeLocation} from "@webgl/locations/attribute";
-import {Attributes} from "@webgl/models/attributes";
-import {MaterialProgramCache} from "@webgl/materials";
-import {MaterialShaderCache} from "@webgl/shader";
-import {Mesh} from "@webgl/models/mesh";
-import {Color} from "@webgl/models/color";
-import {Uniform} from "@webgl/locations/uniform";
-import {Uniforms} from "@webgl/models/uniforms";
-import {Group} from "@webgl/group";
-import {Matrix4} from "@webgl/matrix";
+import { Program } from "@webgl/program";
+import { VertexAttributeLocation } from "@webgl/locations/attribute";
+import { Attributes } from "@webgl/models/attributes";
+import { MaterialProgramCache } from "@webgl/materials";
+import { MaterialShaderCache } from "@webgl/shader";
+import { Mesh } from "@webgl/models/mesh";
+import { Color } from "@webgl/models/color";
+import { Uniform } from "@webgl/locations/uniform";
+import { Uniforms } from "@webgl/models/uniforms";
+import { Group } from "@webgl/group";
+import { Matrix4 } from "@webgl/matrix";
 
-function setGlobalUniforms(renderer: Renderer, program: Program, matrix: Matrix4) {
+function setGlobalUniforms(renderer: Renderer, program: Program, world: Matrix4, view: Matrix4) {
     const u_resolution = new Uniform(program, Uniforms.resolution);
-    u_resolution.set([renderer.canvas.clientWidth, renderer.canvas.clientHeight], renderer.context.INT);
+    u_resolution.set([ renderer.canvas.clientWidth, renderer.canvas.clientHeight ], renderer.context.INT);
 
     const u_ambient = new Uniform(program, Uniforms.ambient);
-    u_ambient.set([1, 1, 1], renderer.context.FLOAT);
+    u_ambient.set([ 1, 1, 1 ], renderer.context.FLOAT);
 
     const u_view_projection = new Uniform(program, Uniforms.view_projection);
-    u_view_projection.setMatrix(matrix);
+    u_view_projection.setMatrix(view);
+
+    const u_world = new Uniform(program, Uniforms.world);
+    u_world.setMatrix(world);
 }
 
 export class Renderer {
@@ -34,16 +37,16 @@ export class Renderer {
 
     constructor(public arg: HTMLElement | WebGLRenderingContext) {
         if (arg instanceof HTMLCanvasElement) {
-            this.context = arg.getContext("webgl", {alpha: false});
+            this.context = arg.getContext("webgl", { alpha: false });
         } else if (arg instanceof WebGLRenderingContext) {
             this.context = arg;
         } else if (arg instanceof HTMLElement) {
             const canvas = arg.appendChild(document.createElement("canvas"));
-            this.context = canvas.getContext("webgl", {alpha: false});
+            this.context = canvas.getContext("webgl", { alpha: false });
         } else {
             throw "invalid argument passed to Renderer constructor";
         }
-        this.shaders = new MaterialShaderCache(this.context);
+        this.shaders  = new MaterialShaderCache(this.context);
         this.programs = new MaterialProgramCache(this.shaders);
     }
 
@@ -57,17 +60,22 @@ export class Renderer {
     }
 
     drawGroup(group: Group, view: Matrix4): void {
-        view = view.multiply(group.transform);
+        debugger
+        const drawGroupRecursion = (group: Group, world: Matrix4) => {
+            world = world.multiply(group.transform);
 
-        group.meshes.forEach((meshes, program) => {
-            program.use();
+            group.meshes.forEach((meshes, program) => {
+                program.use();
 
-            setGlobalUniforms(this, program, view);
+                setGlobalUniforms(this, program, world, view);
 
-            meshes.forEach(this.drawMesh.bind(this, program));
-        });
+                meshes.forEach(this.drawMesh.bind(this, program));
+            });
 
-        group.groups.forEach(value => this.drawGroup(value, view));
+            group.groups.forEach(value => drawGroupRecursion(value, world));
+        };
+
+        drawGroupRecursion(group, Matrix4.identity(4));
     }
 
     private drawMesh(program: Program, mesh: Mesh) {
@@ -93,7 +101,7 @@ export class Renderer {
     }
 
     resize(width: number, height: number) {
-        this.context.canvas.width = width;
+        this.context.canvas.width  = width;
         this.context.canvas.height = height;
         this.context.viewport(0, 0, width, height);
     }

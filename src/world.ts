@@ -1,9 +1,9 @@
 // import {AmbientLight, Color, PerspectiveCamera, Scene, SpotLight, Vector3, WebGLRenderer} from "three";
-import {Aquarium} from "./aquarium";
-import {Renderer} from "@webgl/renderer";
-import {PerspectiveCamera} from "@webgl/cameras/perspective";
-import {Group} from "@webgl/group";
-import {Vector3} from "@webgl/vector";
+import { Aquarium } from "./aquarium";
+import { Renderer } from "@webgl/renderer";
+import { PerspectiveCamera } from "@webgl/cameras/perspective";
+import { Group } from "@webgl/group";
+import { Vector3 } from "@webgl/vector";
 
 export class World {
     renderer: Renderer;
@@ -38,12 +38,15 @@ export class World {
         // });
         // const projection = Vector.projectMouse(event, this.camera, -this.camera.position.z);
         // console.log(projection);
-        // const fish = new Fish(this);
         // const rand = (delta: number) => Math.random() * 2 * delta - delta;
         // fish.movement = Vector.random().multiplyScalar(fish.speed + rand(0.05));
         // fish.position.copy(new Vector3(0, 0, 0));
         // this.aquarium.addFish(fish);
-        // this.scene.add(fish.mesh);
+
+        // const fish = new Fish(this);
+        // this.scene.addMesh(fish.mesh);
+        const fish = this.aquarium.addFish(new Vector3(0, 0, 0));
+        console.log("click");
     }
 
     initializeLights() {
@@ -77,7 +80,7 @@ export class World {
         this.initializeLights();
         this.initializeEvents();
 
-        this.scene.addMesh(this.aquarium.mesh);
+        this.scene.addGroup(this.aquarium.meshes);
 
         this.timestamp = performance.now();
         this.renderer.setRenderLoop(this.renderLoop.bind(this));
@@ -95,11 +98,12 @@ export class World {
     private renderLoop(newTimestamp: DOMHighResTimeStamp) {
         const elapsed = newTimestamp - this.timestamp;
         this.timestamp = newTimestamp;
-        this.aquarium.mesh.rotateY(0.1);
+        this.aquarium.meshes.rotateY(0.1);
         this.aquarium.updateTransformMatrix();
 
-        this.aquarium.update(elapsed);
+        // this.aquarium.update(elapsed);
 
         this.renderer.drawGroup(this.scene, this.camera.viewProjection);
+        // this.renderer.drawGroup(this.aquarium.meshes, this.camera.viewProjection);
     }
 }

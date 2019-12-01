@@ -1,5 +1,5 @@
-import {Shader} from "@webgl/shader";
-import {CacheManager} from "@webgl/utils";
+import { Shader } from "@webgl/shader";
+import { CacheManager } from "@webgl/utils";
 
 export class Program {
     handle: WebGLProgram;
