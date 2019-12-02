@@ -1,7 +1,8 @@
 import { Vector3 } from "@webgl/vector";
 import { Matrix, Matrix4, SquareMatrix } from "@webgl/matrix";
+import { SharedRef } from "../shared";
 
-export class WebGLElement {
+export class WebGLElement extends SharedRef {
     position = new Vector3();
     rotation = new Matrix4();
 

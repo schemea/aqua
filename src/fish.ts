@@ -7,23 +7,31 @@ import { BasicMaterial } from "@webgl/materials";
 import { Color } from "@webgl/models/color";
 import { Mesh } from "@webgl/models/mesh";
 
+const geometryMap = new Map<WebGLRenderingContext, BoxGeometry>();
+const volume      = new Vector3(0.1, 0.05, 0.05);
+const material    = new BasicMaterial(new Color(0xf05050));
+
+function getGeometry(context: WebGLRenderingContext) {
+    if (geometryMap.has(context)) {
+        return geometryMap.get(context);
+    } else {
+        const geometry = new BoxGeometry(context, volume.x, volume.y, volume.z);
+        geometryMap.set(context, geometry);
+        return geometry;
+    }
+}
+
 export class Fish extends Element3D {
     following?: Fish;
-    speed = 0.3;
     oldPosition!: Vector3;
     mesh: Mesh;
+    volume: Vector3;
+    speed: number;
 
     constructor(public world: World) {
         super();
 
-        this.volume    = new Vector3(0.1, 0.05, 0.05);
-        const geometry = new BoxGeometry(world.context, this.volume.x, this.volume.y, this.volume.z);
-        const color    = new Color(0xf05050);
-        // const color    = new Color(0xffffff, 0.5);
-        const material = new BasicMaterial(color);
-        // material.emissive = color;
-        // material.emissiveIntensity = 0.05;
-        this.mesh = new Mesh(geometry, material);
+        this.mesh = new Mesh(getGeometry(world.context), material);
     }
 
     get aquarium() {return this.world.aquarium;}
@@ -80,4 +88,13 @@ export class Fish extends Element3D {
         this.mesh.position = this.position;
         this.mesh.updateTransformMatrix();
     }
+
+    release(): void {
+        super.release();
+
+        this.mesh.unref();
+    }
 }
+
+Fish.prototype.volume = volume;
+Fish.prototype.speed  = 0.3;

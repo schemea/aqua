@@ -50,6 +50,12 @@ export class Aquarium extends Element3D {
         return fish;
     }
 
+    removeFish(fish: Fish) {
+        this.fishes.splice(this.fishes.indexOf(fish), 1);
+        this.meshes.removeMesh(fish.mesh);
+        fish.unref();
+    }
+
     updateTransformMatrix(): void {
         this.meshes.updateTransformMatrix();
     }

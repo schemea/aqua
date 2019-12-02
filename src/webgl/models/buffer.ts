@@ -1,4 +1,4 @@
-import {Mode} from "@webgl/models/mode";
+import { Mode } from "@webgl/models/mode";
 
 export class Buffer {
     handle: WebGLBuffer;
@@ -28,18 +28,8 @@ export class Buffer {
 
 export class VertexBuffer extends Buffer {
     mode: Mode;
-    length: number;
 
     constructor(context: WebGLRenderingContext, target: GLenum) {
         super(context, target);
     }
-
-    // vertices(data: number[], usage: GLenum) {
-    //     super.data(new Float32Array(data), usage);
-    //     length = data.length;
-    // }
-
-    // data(data, usage: number): void {
-    //     throw "cannot call method data of a VertexBuffer";
-    // }
 }

@@ -1,6 +1,7 @@
 import { Bounds } from "./bounds";
 import { Direction } from "./direction";
 import { Vector3 } from "@webgl/vector";
+import { SharedRef } from "./shared";
 
 interface BoundsLike {
     left: number;
@@ -11,7 +12,7 @@ interface BoundsLike {
     front: number;
 }
 
-export class Element3D {
+export class Element3D extends SharedRef {
     volume!: Vector3;
     movement?: Vector3;
     position = new Vector3();

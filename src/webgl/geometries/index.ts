@@ -1,17 +1,20 @@
-import {VertexBuffer} from "@webgl/models/buffer";
-import {Vector3} from "@webgl/vector";
-import {Mode} from "@webgl/models/mode";
+import { VertexBuffer } from "@webgl/models/buffer";
+import { Vector3 } from "@webgl/vector";
+import { Mode } from "@webgl/models/mode";
+import { SharedRef } from "../../shared";
 
-export class Geometry {
+export class Geometry extends SharedRef {
     readonly buffer: VertexBuffer;
     readonly normals: VertexBuffer;
 
     vertexCount = 0;
 
     constructor(public readonly context: WebGLRenderingContext, public readonly dimension: number) {
-        this.buffer = new VertexBuffer(this.context, this.context.ARRAY_BUFFER);
+        super();
+
+        this.buffer  = new VertexBuffer(this.context, this.context.ARRAY_BUFFER);
         this.normals = new VertexBuffer(context, context.ARRAY_BUFFER);
-        this.mode = context.TRIANGLES;
+        this.mode    = context.TRIANGLES;
     }
 
     get mode() { return this.buffer.mode; }
@@ -28,6 +31,13 @@ export class Geometry {
         this.normals.bind();
         this.normals.data(new Float32Array(data), usage);
     }
+
+    release(): void {
+        super.release();
+
+        this.buffer.release();
+        this.normals.release();
+    }
 }
 
 export function computeNormals(vertices: number[], mode: Mode): number[] {
@@ -41,11 +51,11 @@ export function computeNormals(vertices: number[], mode: Mode): number[] {
         return new Vector3(
             vertices[i],
             vertices[i + 1],
-            vertices[i + 2]
+            vertices[i + 2],
         );
     }
 
-    function computeNormal(a: Vector3, b: Vector3, c: Vector3): [number, number, number] {
+    function computeNormal(a: Vector3, b: Vector3, c: Vector3): [ number, number, number ] {
         return b.from(a).cross(c.from(a)).coordinates;
     }
 
