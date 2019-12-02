@@ -3,7 +3,8 @@ import { Aquarium } from "./aquarium";
 import { Renderer } from "@webgl/renderer";
 import { PerspectiveCamera } from "@webgl/cameras/perspective";
 import { Group } from "@webgl/group";
-import { Vector3 } from "@webgl/vector";
+import { Vector2, Vector3 } from "@webgl/vector";
+import { Fish } from "./fish";
 
 
 export class World {
@@ -12,6 +13,8 @@ export class World {
     scene: Group;
     aquarium: Aquarium;
     private timestamp: DOMHighResTimeStamp = 0;
+
+    mouseTracker: Fish;
 
     constructor() {
         this.renderer = new Renderer(document.body);
@@ -22,6 +25,9 @@ export class World {
 
         // this.scene.background = new Color(0x020210);
         // this.scene.background = new Color(0xdddddd);
+
+        this.mouseTracker = new Fish(this);
+        this.scene.addMesh(this.mouseTracker.mesh);
 
         this.initialize();
     }
@@ -46,8 +52,24 @@ export class World {
 
         // const fish = new Fish(this);
         // this.scene.addMesh(fish.mesh);
-        const fish    = this.aquarium.addFish(new Vector3(0, 0, 0));
+        const mouse = new Vector2(event.x, event.y);
+
+        mouse.x *= 2 / innerWidth;
+        mouse.y *= 2 / innerHeight;
+        mouse.x -= 1;
+        mouse.y -= 1;
+        mouse.y *= -1;
+
+        const position = this.scene.transform.inverse().transform(this.camera.unproject(mouse));
+        const fish     = this.aquarium.addFish(position);
+
+        console.log(mouse.coordinates, position.coordinates);
         fish.movement = Vector3.fromSpherical(1, Math.random(), Math.random());
+    }
+
+    onMouseOver(event: MouseEvent) {
+        this.mouseTracker.position = this.camera.unproject(new Vector2(event.x, event.y));
+        this.mouseTracker.updateTransformMatrix();
     }
 
     initializeLights() {
@@ -63,7 +85,9 @@ export class World {
     }
 
     initializeEvents() {
+
         document.addEventListener("click", this.onClick.bind(this));
+        this.canvas.addEventListener("mousemove", this.onMouseOver.bind(this));
     }
 
     initialize(): void {

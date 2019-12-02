@@ -1,7 +1,7 @@
 import "module-alias/register";
 
-import {Matrix, Matrix4, SquareMatrix} from "./matrix";
-import {Vector3} from "./vector";
+import { Matrix, Matrix4, SquareMatrix } from "./matrix";
+import { Vector3 } from "../vector";
 
 function toRadian(deg: number) {
     return deg * Math.PI / 180;

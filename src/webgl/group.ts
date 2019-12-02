@@ -42,6 +42,8 @@ export class Group extends WebGLElement {
         if (arg instanceof Group) {
             this.context = arg.context;
             this.shaders = arg.shaders;
+
+            arg.addGroup(this);
         } else {
             this.context = arg;
             this.shaders = {

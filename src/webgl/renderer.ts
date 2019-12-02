@@ -8,7 +8,7 @@ import { Color } from "@webgl/models/color";
 import { Uniform } from "@webgl/locations/uniform";
 import { Uniforms } from "@webgl/models/uniforms";
 import { Group } from "@webgl/group";
-import { Matrix4 } from "@webgl/matrix";
+import { Matrix4 } from "./transforms/matrix";
 import WebGLDebugUtils from "webgl-debug";
 
 function setGlobalUniforms(renderer: Renderer, program: Program, world: Matrix4, view: Matrix4) {
@@ -92,6 +92,8 @@ export class Renderer {
 
     drawGroup(group: Group, view: Matrix4): void {
         const drawGroupRecursion = (group: Group, world: Matrix4) => {
+            group.beforeDraw();
+
             world = world.multiply(group.transform);
 
             group.meshes.forEach((meshes, program) => {
@@ -103,32 +105,35 @@ export class Renderer {
             });
 
             group.groups.forEach(value => drawGroupRecursion(value, world));
+
+            group.afterDraw();
         };
 
         drawGroupRecursion(group, Matrix4.identity(4));
     }
 
     private drawMesh(program: Program, mesh: Mesh) {
+        mesh.beforeDraw();
+
         mesh.material.apply(program);
-
         const u_transform = new Uniform(program, Uniforms.transform);
+
         u_transform.setMatrix(mesh.transform);
-
         const geometry = mesh.geometry;
-        geometry.buffer.bind();
 
+        geometry.buffer.bind();
         const a_position = new VertexAttributeLocation(program, Attributes.position, geometry.dimension);
         a_position.enable();
+
         a_position.bind();
 
         geometry.normals.bind();
-
         const a_normal = new VertexAttributeLocation(program, Attributes.normal, 3);
         a_normal.enable();
-        a_normal.bind();
 
-        mesh.beforeDraw();
+        a_normal.bind();
         this.context.drawArrays(geometry.mode, 0, geometry.vertexCount);
+
         mesh.afterDraw();
     }
 

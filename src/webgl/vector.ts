@@ -1,4 +1,4 @@
-import {Matrix, SquareMatrix} from "./matrix";
+import { Matrix, SquareMatrix } from "./transforms/matrix";
 
 export class Vector<D extends number = number> {
     coordinates: number[];
@@ -119,6 +119,12 @@ export class Vector2 extends Vector {
     constructor(x = 0, y = 0) {
         super(2);
         this.coordinates = [x, y];
+    }
+
+    clone(): Vector2 {
+        const obj = Object.create(Vector2.prototype);
+        Object.assign(obj, this);
+        return obj;
     }
 
     get x(): number { return this.coordinates[0]; }

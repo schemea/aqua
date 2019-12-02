@@ -1,5 +1,5 @@
 import { Vector3 } from "@webgl/vector";
-import { Matrix, Matrix4, SquareMatrix } from "@webgl/matrix";
+import { Matrix, Matrix4, SquareMatrix } from "./transforms/matrix";
 import { SharedRef } from "../shared";
 
 export class WebGLElement extends SharedRef {
