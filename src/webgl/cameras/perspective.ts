@@ -1,5 +1,5 @@
 import { Camera } from "@webgl/cameras/index";
-import { Matrix4 } from "../transforms/matrix";
+import { Matrix4 } from "../matrix/matrix4";
 
 export class PerspectiveCamera extends Camera {
     projection: Matrix4;

@@ -1,10 +1,11 @@
-// import {AmbientLight, Color, PerspectiveCamera, Scene, SpotLight, Vector3, WebGLRenderer} from "three";
 import { Aquarium } from "./aquarium";
 import { Renderer } from "@webgl/renderer";
 import { PerspectiveCamera } from "@webgl/cameras/perspective";
 import { Group } from "@webgl/group";
 import { Vector2, Vector3 } from "@webgl/vector";
 import { Fish } from "./fish";
+
+// import {AmbientLight, Color, PerspectiveCamera, Scene, SpotLight, Vector3, WebGLRenderer} from "three";
 
 
 export class World {
@@ -60,7 +61,7 @@ export class World {
         mouse.y -= 1;
         mouse.y *= -1;
 
-        const position = this.scene.transform.inverse().transform(this.camera.unproject(mouse));
+        const position = this.camera.unproject(mouse);
         const fish     = this.aquarium.addFish(position);
 
         console.log(mouse.coordinates, position.coordinates);

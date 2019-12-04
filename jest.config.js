@@ -4,5 +4,8 @@ module.exports = {
     ],
     transform: {
         "\\.tsx?$": "ts-jest"
+    },
+    moduleNameMapper: {
+        "@webgl/(.*)$": "<rootDir>/src/webgl/$1"
     }
 };

@@ -1,4 +1,5 @@
-import { Matrix, SquareMatrix } from "./transforms/matrix";
+import { Matrix } from "./matrix";
+import { SquareMatrix } from "./matrix/square";
 
 export class Vector<D extends number = number> {
     coordinates: number[];
@@ -31,6 +32,7 @@ export class Vector<D extends number = number> {
     }
 
     static create<T extends Vector>(vector: Vector): T;
+    static create<D extends number>(vector: Vector<D>): Vector<D>;
     static create<D extends number, T extends Vector<D> = Vector<D>>(dimension: D): T;
     static create(arg: number | Vector) {
         if (typeof arg === "number") {
@@ -69,7 +71,7 @@ export class Vector<D extends number = number> {
     }
 
     clone(): Vector<D> {
-        const vec = Vector.create(this) as Vector<D>;
+        const vec = Vector.create<D>(this);
         vec.assign(this);
         return vec;
     }
@@ -112,6 +114,15 @@ export class Vector<D extends number = number> {
         const vec = Vector.create(this);
         vec.coordinates = this.coordinates.map(value => -value);
         return vec as Vector<D>;
+    }
+
+    round(digits: number = 2) {
+        const vec = this.clone();
+        const fac = 10 ** digits;
+
+        vec.coordinates = vec.coordinates.map(value => Math.round(value * fac) / fac);
+
+        return vec;
     }
 }
 
@@ -191,6 +202,8 @@ export interface Vector3 {
     dimension: 3;
 
     clone(): Vector3;
+
+    round(digits?: number ): Vector3;
 
     from(origin: Vector<3>): Vector3;
 

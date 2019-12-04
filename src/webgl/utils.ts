@@ -20,3 +20,13 @@ export class CacheManager<T, FN extends Function = (name: string) => T> {
         return element;
     }
 }
+
+export function getArrayFromArgs(args: [ number[] ] | number[]): number[] {
+    if (typeof args[0] === "number") {
+        return args as number[];
+    } else if (typeof args[0][0]) {
+        return args[0];
+    } else {
+        throw "invalid arguments";
+    }
+}

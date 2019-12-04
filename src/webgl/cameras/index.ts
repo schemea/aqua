@@ -1,19 +1,18 @@
-import { Matrix, Matrix4 } from "../transforms/matrix";
 import { WebGLElement } from "@webgl/element";
 import { Vector2, Vector3 } from "@webgl/vector";
+import { Matrix } from "../matrix";
+import { Matrix4 } from "../matrix/matrix4";
+import { Transform } from "../transform";
 
 export class Camera extends WebGLElement {
-    projection: Matrix4;
-    view: Matrix4;
-    viewProjection: Matrix4;
+    projection     = Matrix4.identity();
+    view           = Matrix4.identity();
+    viewProjection = Matrix4.identity();
 
     constructor() {
         super();
 
-        this.view           = Matrix4.identity(4);
-        this.viewProjection = Matrix4.identity(4);
-        this.transform      = Matrix4.identity(4);
-        this.projection     = Matrix4.identity(4);
+        this.transform = new Transform();
 
         (window as any).camera = this;
     }
@@ -25,7 +24,7 @@ export class Camera extends WebGLElement {
     updateTransformMatrix(): void {
         // this.transform = this.view.inverse();
         super.updateTransformMatrix();
-        this.view = this.transform.inverse();
+        this.view = this.transform.get().inverse();
     }
 
     updateProjectionMatrix(): void { this.projection = Matrix4.identity(4); }
@@ -74,9 +73,9 @@ export class Camera extends WebGLElement {
         vector.coordinates = vec4.data.slice(0, 3).map(value => value / 1) as [ number, number, number ];
         // vector.z *= 0.25;
 
-        console.log("w", vec4.data[3], "     ", vector.coordinates.map(value => Math.round(value * 100) / 100));
-
-        console.log("projected", this.viewProjection.transform(vector).coordinates);
+        // console.log("w", vec4.data[3], "     ", vector.coordinates.map(value => Math.round(value * 100) / 100));
+        //
+        // console.log("projected", this.viewProjection.transform(vector).coordinates);
 
         return vector;
     }

@@ -1,12 +1,15 @@
 import { Vector3 } from "@webgl/vector";
-import { Matrix, Matrix4, SquareMatrix } from "./transforms/matrix";
 import { SharedRef } from "../shared";
+import { Transform } from "./transform";
+import { Matrix4 } from "./matrix/matrix4";
+import { SquareMatrix } from "./matrix/square";
+import { Matrix } from "./matrix";
 
 export class WebGLElement extends SharedRef {
     position = new Vector3();
-    rotation = new Matrix4();
+    rotation = new Transform();
 
-    transform = Matrix.identity(4) as Matrix4;
+    transform = new Transform();
 
     /** HOOKS */
 
@@ -22,8 +25,8 @@ export class WebGLElement extends SharedRef {
         const c = this.position.dot(vector);
 
         if (c === 1) {
-            this.rotation = Matrix4.identity(4).multiply(-1);
-            this.rotation.set(3, 3, 1);
+            this.rotation.reset();
+            this.rotation.scale(-1);
             return;
         }
 
@@ -33,20 +36,20 @@ export class WebGLElement extends SharedRef {
             -v.y, v.x, 0,
         ]);
 
-        const rot  = SquareMatrix.add(Matrix.identity(3), vx, vx.multiply(vx).multiply(1 / (1 + c)));
+        const rot  = SquareMatrix.add(SquareMatrix.identity(3), vx, vx.multiply(vx).multiply(1 / (1 + c)));
         const mat4 = new Matrix4();
         rot.forEach((value, i, j) => mat4.set(i, j, value));
-        this.rotation = mat4;
+        this.rotation.set(mat4);
     }
 
     updateTransformMatrix(): void {
-        this.transform = Matrix.identity(4);
-        this.transform = this.transform.translate(this.position.coordinates);
-        this.transform = this.transform.multiply(this.rotation);
+        this.transform.reset();
+        this.transform.translate(this.position.coordinates);
+        this.transform.push(this.rotation);
     }
 
     rotate(theta: number, axis: Vector3): void {
-        this.rotation = this.rotation.rotate(theta * Math.PI / 180, axis);
+        this.rotation.rotate(theta * Math.PI / 180, axis);
     }
 
     rotateX(theta: number): void { this.rotate(theta, new Vector3(1, 0, 0)); }

@@ -1,5 +1,5 @@
 import { Program } from "@webgl/program";
-import { SquareMatrix } from "../transforms/matrix";
+import { SquareMatrix } from "../matrix/square";
 
 function getSuffix(context: WebGLRenderingContext, type: GLenum) {
     switch (type) {
